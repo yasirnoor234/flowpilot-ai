@@ -7,6 +7,8 @@ import type { WorkflowRecord, WorkflowVersionRecord, WorkflowGraph, WorkflowStat
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Card } from '@/components/ui/card';
+import { Dialog, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog';
 import { WorkflowCanvas } from './canvas/workflow-canvas';
 import { WorkflowMobileView } from './canvas/workflow-mobile-view';
 import { WorkflowValidatorPanel } from './workflow-validator-panel';
@@ -24,15 +26,11 @@ import {
   Save,
   Rocket,
   Power,
-  Layers,
   History,
   ShieldCheck,
   ArrowLeft,
-  CheckCircle2,
   FileJson,
   Play,
-  Activity,
-  Sparkles,
   LayoutGrid,
 } from 'lucide-react';
 
@@ -45,7 +43,7 @@ interface WorkflowDetailProps {
 export function WorkflowDetail({
   workflow,
   versions,
-  workspaceName,
+  workspaceName: _workspaceName,
 }: WorkflowDetailProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'canvas' | 'json' | 'validator' | 'history'>('canvas');
@@ -70,7 +68,7 @@ export function WorkflowDetail({
     return JSON.stringify(
       triggerNode?.config?.sample_payload || {
         email: 'lead@enterprise.com',
-        first_name: 'Jordan',
+        name: 'Jordan Miller',
         company: 'Enterprise AI Corp',
         budget: '$25,000',
         message: 'Need an immediate enterprise AI solution.',
@@ -120,7 +118,7 @@ export function WorkflowDetail({
       if (result.error) {
         alert(result.error);
       } else {
-        setSaveMessage('Draft graph saved successfully!');
+        setSaveMessage('Draft saved');
         setTimeout(() => setSaveMessage(null), 3000);
       }
     });
@@ -195,7 +193,7 @@ export function WorkflowDetail({
       alert(result.error);
       return { error: result.error };
     } else {
-      setSaveMessage('Draft graph saved successfully!');
+      setSaveMessage('Draft saved');
       setTimeout(() => setSaveMessage(null), 3000);
       return { success: true };
     }
@@ -203,29 +201,33 @@ export function WorkflowDetail({
 
   return (
     <div className="space-y-6">
-      {/* Back to Workflows Breadcrumb & Header */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Link
-            href="/workflows"
-            className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back to Workflows</span>
-          </Link>
-          <span className="text-zinc-600 text-xs">/</span>
-          <span className="text-xs text-zinc-400">{workspaceName}</span>
-        </div>
+      {/* Back to Workflows Breadcrumb */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/workflows"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back to Workflows</span>
+        </Link>
 
-        {/* Workflow Title & Control Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-5 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-xl">
-          <div className="space-y-1">
+        {saveMessage && (
+          <span className="text-xs text-emerald-600 font-medium">
+            ✓ {saveMessage}
+          </span>
+        )}
+      </div>
+
+      {/* Workflow Title & Control Actions Card */}
+      <Card className="p-5">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="space-y-1 min-w-0">
             {isEditingMetadata ? (
-              <form onSubmit={handleSaveMetadata} className="space-y-2 max-w-lg">
+              <form onSubmit={handleSaveMetadata} className="space-y-3 max-w-lg">
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  label="Workflow Title"
+                  placeholder="Workflow Name"
                   required
                 />
                 <textarea
@@ -233,7 +235,7 @@ export function WorkflowDetail({
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Workflow description..."
                   rows={2}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-2 text-xs text-zinc-200 focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-lg border border-zinc-200 bg-white p-2.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                 />
                 <div className="flex items-center gap-2">
                   <Button type="submit" size="sm" isLoading={isPending}>
@@ -241,7 +243,7 @@ export function WorkflowDetail({
                   </Button>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => setIsEditingMetadata(false)}
                   >
@@ -251,8 +253,8 @@ export function WorkflowDetail({
               </form>
             ) : (
               <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-white tracking-tight">{workflow.name}</h2>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h2 className="text-xl font-bold text-zinc-900 tracking-tight">{workflow.name}</h2>
                   <Badge
                     variant={
                       workflow.status === 'active'
@@ -261,38 +263,32 @@ export function WorkflowDetail({
                         ? 'default'
                         : 'secondary'
                     }
-                    className="capitalize text-[10px]"
+                    size="sm"
                   >
                     {workflow.status}
                   </Badge>
                   {workflow.active_version_id && (
-                    <Badge variant="outline" className="text-[10px]">
-                      Live Version Snapshot Active
+                    <Badge variant="primary" size="sm">
+                      Published
                     </Badge>
                   )}
                   <button
                     onClick={() => setIsEditingMetadata(true)}
-                    className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+                    className="text-xs text-zinc-500 hover:text-zinc-900 underline ml-1 cursor-pointer"
                   >
                     Edit details
                   </button>
                 </div>
-                <p className="text-xs text-zinc-400 mt-1 max-w-2xl">
+                <p className="text-xs text-zinc-500 mt-1 max-w-2xl leading-relaxed">
                   {workflow.description || 'No description provided.'}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {saveMessage && (
-              <span className="text-xs text-emerald-400 font-medium animate-pulse">
-                {saveMessage}
-              </span>
-            )}
-
-            <Button variant="secondary" size="sm" onClick={handleSaveDraft} isLoading={isPending}>
-              <Save className="mr-1.5 h-3.5 w-3.5" />
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <Button variant="outline" size="sm" onClick={handleSaveDraft} isLoading={isPending}>
+              <Save className="h-3.5 w-3.5" />
               <span>Save Draft</span>
             </Button>
 
@@ -301,19 +297,18 @@ export function WorkflowDetail({
               onClick={() => setIsPublishModalOpen(true)}
               disabled={!validationResult.isValid}
             >
-              <Rocket className="mr-1.5 h-3.5 w-3.5" />
+              <Rocket className="h-3.5 w-3.5" />
               <span>Publish Version</span>
             </Button>
 
             {workflow.active_version_id && (
               <>
                 <Button
-                  variant="default"
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsTestRunModalOpen(true)}
-                  className="bg-purple-600 hover:bg-purple-500 text-white"
                 >
-                  <Play className="mr-1.5 h-3.5 w-3.5 fill-current" />
+                  <Play className="h-3.5 w-3.5 fill-current" />
                   <span>Test Run</span>
                 </Button>
 
@@ -323,24 +318,24 @@ export function WorkflowDetail({
                   onClick={handleToggleStatus}
                   isLoading={isPending}
                 >
-                  <Power className="mr-1.5 h-3.5 w-3.5" />
+                  <Power className="h-3.5 w-3.5" />
                   <span>{workflow.status === 'active' ? 'Deactivate' : 'Activate'}</span>
                 </Button>
               </>
             )}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center justify-between border-b border-zinc-800">
+      <div className="flex items-center justify-between border-b border-zinc-200">
         <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveTab('canvas')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'canvas'
-                ? 'border-purple-500 text-purple-400 font-semibold'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                ? 'border-indigo-600 text-indigo-700 font-semibold'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900'
             }`}
           >
             <LayoutGrid className="h-4 w-4" />
@@ -349,10 +344,10 @@ export function WorkflowDetail({
 
           <button
             onClick={() => setActiveTab('json')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'json'
-                ? 'border-purple-500 text-purple-400 font-semibold'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                ? 'border-indigo-600 text-indigo-700 font-semibold'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900'
             }`}
           >
             <FileJson className="h-4 w-4" />
@@ -361,37 +356,37 @@ export function WorkflowDetail({
 
           <button
             onClick={() => setActiveTab('validator')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'validator'
-                ? 'border-purple-500 text-purple-400 font-semibold'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                ? 'border-indigo-600 text-indigo-700 font-semibold'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900'
             }`}
           >
             <ShieldCheck className="h-4 w-4" />
-            <span>Publication Rules</span>
+            <span>Validation Rules</span>
             <span
               className={`h-2 w-2 rounded-full ${
-                validationResult.isValid ? 'bg-emerald-400' : 'bg-red-400'
+                validationResult.isValid ? 'bg-emerald-500' : 'bg-red-500'
               }`}
             />
           </button>
 
           <button
             onClick={() => setActiveTab('history')}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
               activeTab === 'history'
-                ? 'border-purple-500 text-purple-400 font-semibold'
-                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+                ? 'border-indigo-600 text-indigo-700 font-semibold'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900'
             }`}
           >
             <History className="h-4 w-4" />
-            <span>Version History ({versions.length})</span>
+            <span>Versions ({versions.length})</span>
           </button>
         </div>
 
         {/* Template Shortcut Dropdown */}
         <div className="flex items-center gap-2 pb-2">
-          <span className="text-[11px] text-zinc-500 hidden sm:inline">Load Preset:</span>
+          <span className="text-[11px] text-zinc-500 hidden sm:inline">Load Template:</span>
           <select
             onChange={(e) => {
               if (e.target.value) {
@@ -400,7 +395,7 @@ export function WorkflowDetail({
               }
             }}
             defaultValue=""
-            className="rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300 focus:outline-none focus:border-purple-500"
+            className="rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600"
           >
             <option value="" disabled>
               Select Template...
@@ -438,246 +433,156 @@ export function WorkflowDetail({
       {activeTab === 'json' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: Interactive Node Steps Explorer */}
             <div className="lg:col-span-1 space-y-3">
-              <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider px-1">
+              <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider px-1">
                 Workflow Nodes ({draftGraph.nodes.length})
               </div>
 
               <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                {draftGraph.nodes.map((node, idx) => {
-                  const outgoingEdges = draftGraph.edges.filter((e) => e.source === node.id);
-
-                  return (
-                    <div
-                      key={node.id}
-                      className="p-3.5 rounded-xl border border-zinc-800 bg-zinc-900/70 space-y-2 text-xs"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="h-5 w-5 rounded-md bg-indigo-500/15 text-indigo-400 font-mono text-[10px] flex items-center justify-center font-bold">
-                            {idx + 1}
-                          </span>
-                          <span className="font-semibold text-white">{node.title}</span>
-                        </div>
-                        <span className="text-[9px] font-mono text-zinc-400 uppercase px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800">
-                          {node.type.replace('action_', '').replace('trigger_', '')}
-                        </span>
-                      </div>
-
-                      <div className="text-[11px] text-zinc-400 bg-zinc-950/60 p-2 rounded-lg font-mono">
-                        ID: {node.id}
-                      </div>
-
-                      {outgoingEdges.length > 0 && (
-                        <div className="text-[10px] text-zinc-500 pt-1 border-t border-zinc-800/60 space-y-1">
-                          {outgoingEdges.map((edge) => (
-                            <div key={edge.id} className="flex items-center gap-1.5">
-                              <span>↳</span>
-                              {edge.source_handle && (
-                                <span className="text-indigo-400 font-semibold uppercase">
-                                  [{edge.source_handle}]
-                                </span>
-                              )}
-                              <span>Points to:</span>
-                              <span className="text-zinc-300 font-mono">{edge.target}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                {draftGraph.nodes.map((node, idx) => (
+                  <Card key={node.id} className="p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-semibold text-zinc-900">
+                        {idx + 1}. {node.title}
+                      </span>
+                      <Badge variant="secondary" size="sm">{node.type}</Badge>
                     </div>
-                  );
-                })}
+                    <div className="text-[11px] font-mono text-zinc-500 truncate">
+                      ID: {node.id}
+                    </div>
+                  </Card>
+                ))}
               </div>
             </div>
 
-            {/* Right: Draft Graph JSON Inspector & Direct Schema Editor */}
             <div className="lg:col-span-2 space-y-3">
               <div className="flex items-center justify-between px-1">
-                <div className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileJson className="h-3.5 w-3.5 text-indigo-400" />
-                  <span>Draft Graph JSON Specification</span>
+                <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                  Raw Graph JSON
                 </div>
-                <Badge variant={jsonError ? 'danger' : 'success'} className="text-[10px]">
-                  {jsonError ? 'Syntax Error' : 'Valid JSON'}
-                </Badge>
+                {jsonError && (
+                  <span className="text-xs text-red-600 font-medium">{jsonError}</span>
+                )}
               </div>
-
-              {jsonError && (
-                <div className="p-2.5 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-300">
-                  {jsonError}
-                </div>
-              )}
 
               <textarea
                 value={rawJsonText}
                 onChange={(e) => handleJsonChange(e.target.value)}
                 rows={20}
-                className="w-full font-mono text-xs p-4 rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-200 focus:outline-none focus:border-indigo-500 leading-relaxed resize-y"
+                className="w-full rounded-xl bg-zinc-900 text-emerald-400 font-mono text-xs p-4 focus:outline-none focus:ring-2 focus:ring-indigo-600"
               />
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab 2: Publication Rules Checklist */}
+      {/* Tab 3: Validator */}
       {activeTab === 'validator' && (
-        <WorkflowValidatorPanel validationResult={validationResult} />
+        <WorkflowValidatorPanel
+          validationResult={validationResult}
+          onOpenPublishModal={() => setIsPublishModalOpen(true)}
+        />
       )}
 
-      {/* Tab 3: Version History */}
+      {/* Tab 4: Version History */}
       {activeTab === 'history' && (
         <VersionHistory
           versions={versions}
           activeVersionId={workflow.active_version_id}
+          workflowId={workflow.id}
         />
       )}
 
-      {/* Publish Modal */}
-      {isPublishModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Rocket className="h-4 w-4 text-indigo-400" />
-                <span>Publish Immutable Workflow Version</span>
-              </h3>
-              <button
-                onClick={() => setIsPublishModalOpen(false)}
-                className="text-xs text-zinc-400 hover:text-white"
-              >
-                ✕
-              </button>
+      {/* Publish Version Dialog Modal */}
+      <Dialog open={isPublishModalOpen} onOpenChange={setIsPublishModalOpen}>
+        <DialogHeader>
+          <DialogTitle>Publish Workflow Version</DialogTitle>
+          <DialogDescription>
+            Creates an immutable version snapshot. Running and scheduled executions will reference this version.
+          </DialogDescription>
+          <DialogClose onClose={() => setIsPublishModalOpen(false)} />
+        </DialogHeader>
+
+        <form onSubmit={handlePublish} className="space-y-4">
+          {publishError && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+              {publishError}
             </div>
+          )}
 
-            <form onSubmit={handlePublish} className="space-y-4 pt-4">
-              {publishError && (
-                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400">
-                  {publishError}
-                </div>
-              )}
-
-              <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-950/20 text-xs text-emerald-300 space-y-1">
-                <div className="font-semibold flex items-center gap-1.5">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>All 8 Publication Constraints Verified</span>
-                </div>
-                <p className="text-emerald-400/90 text-[11px]">
-                  An immutable snapshot of this DAG will be locked. Any in-flight background runs will reference this version snapshot safely.
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
-                  Version Change Summary / Notes
-                </label>
-                <textarea
-                  value={changeSummary}
-                  onChange={(e) => setChangeSummary(e.target.value)}
-                  placeholder="e.g. Initial lead qualification flow with 48h follow-up delay"
-                  rows={3}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-2.5 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-indigo-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsPublishModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" size="sm" isLoading={isPending}>
-                  Publish & Activate Snapshot
-                </Button>
-              </div>
-            </form>
+          <div>
+            <label className="block text-xs font-medium text-zinc-700 mb-1.5">
+              Change Summary (Optional)
+            </label>
+            <textarea
+              value={changeSummary}
+              onChange={(e) => setChangeSummary(e.target.value)}
+              placeholder="e.g. Added 24-hr follow-up timer with CRM status re-reading"
+              rows={3}
+              className="w-full rounded-lg border border-zinc-200 bg-white p-2.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            />
           </div>
-        </div>
-      )}
 
-      {/* Test Run Execution Modal */}
-      {isTestRunModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Play className="h-4 w-4 text-purple-400 fill-current" />
-                <span>Execute Manual Test Run</span>
-              </h3>
-              <button
-                onClick={() => setIsTestRunModalOpen(false)}
-                className="text-xs text-zinc-400 hover:text-white"
-              >
-                ✕
-              </button>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsPublishModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" size="sm" isLoading={isPending}>
+              Publish Version
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
+
+      {/* Test Run Dialog Modal */}
+      <Dialog open={isTestRunModalOpen} onOpenChange={setIsTestRunModalOpen}>
+        <DialogHeader>
+          <DialogTitle>Execute Test Run</DialogTitle>
+          <DialogDescription>
+            Dispatch a test event against the active published workflow version.
+          </DialogDescription>
+          <DialogClose onClose={() => setIsTestRunModalOpen(false)} />
+        </DialogHeader>
+
+        <form onSubmit={handleTestRun} className="space-y-4">
+          {testRunError && (
+            <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+              {testRunError}
             </div>
+          )}
 
-            <form onSubmit={handleTestRun} className="space-y-4 pt-4">
-              {testRunError && (
-                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400">
-                  {testRunError}
-                </div>
-              )}
-
-              <div className="p-3.5 rounded-xl border border-purple-500/20 bg-purple-950/20 text-xs text-purple-300 space-y-1">
-                <div className="font-semibold flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-purple-400" />
-                  <span>Durable Inngest Execution Engine</span>
-                </div>
-                <p className="text-purple-300/80 text-[11px]">
-                  Submits a trigger event to execute against the currently active immutable version snapshot with full step persistence, durable retries, and audit logs.
-                </p>
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
-                    Test Trigger Payload (JSON)
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setTestPayloadText(defaultSamplePayload)}
-                    className="text-[11px] text-purple-400 hover:underline"
-                  >
-                    Reset to Default
-                  </button>
-                </div>
-                <textarea
-                  value={testPayloadText}
-                  onChange={(e) => setTestPayloadText(e.target.value)}
-                  rows={8}
-                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-xs font-mono text-emerald-400 focus:border-purple-500 focus:outline-none"
-                  required
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsTestRunModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  isLoading={isPending}
-                  className="bg-purple-600 hover:bg-purple-500 text-white"
-                >
-                  <Play className="mr-1.5 h-3.5 w-3.5 fill-current" />
-                  <span>Launch Test Run</span>
-                </Button>
-              </div>
-            </form>
+          <div>
+            <label className="block text-xs font-medium text-zinc-700 mb-1.5">
+              Sample Trigger Payload (JSON)
+            </label>
+            <textarea
+              value={testPayloadText}
+              onChange={(e) => setTestPayloadText(e.target.value)}
+              rows={8}
+              className="w-full rounded-lg bg-zinc-900 text-emerald-400 font-mono text-xs p-3 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+            />
           </div>
-        </div>
-      )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsTestRunModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" size="sm" isLoading={isPending}>
+              Dispatch Run
+            </Button>
+          </DialogFooter>
+        </form>
+      </Dialog>
     </div>
   );
 }

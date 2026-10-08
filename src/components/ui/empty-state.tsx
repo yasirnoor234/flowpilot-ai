@@ -1,54 +1,58 @@
-import * as React from 'react';
-import { cn } from '@/lib/utils';
-import { LucideIcon, Inbox } from 'lucide-react';
-import { Button } from './button';
+import React from 'react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/card';
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
+  icon?: React.ReactNode | React.ComponentType<{ className?: string }>;
   title: string;
   description: string;
+  action?: React.ReactNode;
   actionLabel?: string;
-  onAction?: () => void;
   actionHref?: string;
+  onAction?: () => void;
   className?: string;
 }
 
 export function EmptyState({
-  icon: Icon = Inbox,
+  icon: Icon,
   title,
   description,
+  action,
   actionLabel,
-  onAction,
   actionHref,
-  className,
+  onAction,
+  className = '',
 }: EmptyStateProps) {
   return (
-    <div
-      className={cn(
-        'flex min-h-[320px] flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 p-8 text-center transition-all',
-        className
+    <Card className={`p-8 sm:p-12 text-center flex flex-col items-center justify-center ${className}`}>
+      {Icon && (
+        <div className="h-12 w-12 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center text-zinc-500 mb-4">
+          {typeof Icon === 'function' ? <Icon className="h-6 w-6 text-zinc-500" /> : Icon}
+        </div>
       )}
-    >
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-4 shadow-inner">
-        <Icon className="h-8 w-8 stroke-[1.5]" />
-      </div>
-      <h3 className="text-lg font-medium text-zinc-100 mb-1">{title}</h3>
-      <p className="max-w-md text-sm text-zinc-400 mb-6 leading-relaxed">
+      <h3 className="text-base font-semibold text-zinc-900 mb-1.5">{title}</h3>
+      <p className="text-sm text-zinc-500 max-w-sm leading-relaxed mb-6">
         {description}
       </p>
-      {actionLabel && (
-        <>
-          {actionHref ? (
-            <a href={actionHref}>
-              <Button size="sm">{actionLabel}</Button>
-            </a>
-          ) : (
-            <Button size="sm" onClick={onAction}>
-              {actionLabel}
-            </Button>
-          )}
-        </>
-      )}
-    </div>
+      {action ? (
+        <div>{action}</div>
+      ) : actionLabel && actionHref ? (
+        <Link
+          href={actionHref}
+          className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+        >
+          {actionLabel}
+        </Link>
+      ) : actionLabel && onAction ? (
+        <button
+          onClick={onAction}
+          className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 transition-colors"
+        >
+          {actionLabel}
+        </button>
+      ) : null}
+    </Card>
   );
 }
+
+

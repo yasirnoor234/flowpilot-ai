@@ -38,34 +38,34 @@ export default function SignUpPage() {
   }
 
   return (
-    <Card className="border-zinc-800 bg-zinc-900/70 shadow-2xl backdrop-blur-xl">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-white">Create your account</CardTitle>
-        <CardDescription>
+        <CardTitle className="text-xl font-bold text-zinc-900">Create your account</CardTitle>
+        <CardDescription className="text-xs text-zinc-500">
           Start automating your lead pipeline with AI workflows.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {successMessage ? (
           <div className="space-y-4 text-center py-4">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600">
               <CheckCircle2 className="h-6 w-6" />
             </div>
-            <h4 className="text-base font-semibold text-zinc-100">Verification Sent</h4>
-            <p className="text-xs text-zinc-400 leading-relaxed">
+            <h4 className="text-base font-semibold text-zinc-900">Verification email sent</h4>
+            <p className="text-xs text-zinc-500 leading-relaxed">
               {successMessage}
             </p>
             <Link href="/login">
-              <Button variant="secondary" className="w-full mt-4">
-                Back to Sign In
+              <Button variant="outline" className="w-full mt-4">
+                Back to sign in
               </Button>
             </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+                <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
                 <span>{error}</span>
               </div>
             )}
@@ -74,7 +74,7 @@ export default function SignUpPage() {
               id="fullName"
               name="fullName"
               type="text"
-              label="Full Name"
+              label="Full name"
               placeholder="Alex Morgan"
               required
             />
@@ -83,7 +83,7 @@ export default function SignUpPage() {
               id="email"
               name="email"
               type="email"
-              label="Work Email"
+              label="Work email"
               placeholder="alex@company.com"
               required
               autoComplete="email"
@@ -101,18 +101,19 @@ export default function SignUpPage() {
             />
 
             <Button type="submit" className="w-full mt-2" isLoading={loading}>
-              <span>Create Account</span>
+              <span>Create account</span>
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
         )}
       </CardContent>
-      <CardFooter className="flex justify-center text-xs text-zinc-400">
+      <CardFooter className="flex justify-center text-xs text-zinc-500">
         Already have an account?{' '}
-        <Link href="/login" className="ml-1 font-medium text-indigo-400 hover:text-indigo-300">
+        <Link href="/login" className="ml-1 font-medium text-indigo-600 hover:text-indigo-700">
           Sign in
         </Link>
       </CardFooter>
     </Card>
   );
 }
+

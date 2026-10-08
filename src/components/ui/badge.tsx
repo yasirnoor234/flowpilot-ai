@@ -1,28 +1,37 @@
 import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide transition-colors focus:outline-none',
+  'inline-flex items-center font-medium rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 select-none',
   {
     variants: {
       variant: {
         default:
-          'bg-indigo-500/15 text-indigo-400 border border-indigo-500/30',
+          'bg-zinc-100 text-zinc-800 border border-zinc-200/80',
         secondary:
-          'bg-zinc-800 text-zinc-300 border border-zinc-700/60',
+          'bg-zinc-100 text-zinc-700 border border-zinc-200',
+        primary:
+          'bg-indigo-50 text-indigo-700 border border-indigo-200/80',
         success:
-          'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+          'bg-emerald-50 text-emerald-700 border border-emerald-200/80',
         warning:
-          'bg-amber-500/15 text-amber-400 border border-amber-500/30',
-        danger:
-          'bg-red-500/15 text-red-400 border border-red-500/30',
+          'bg-amber-50 text-amber-800 border border-amber-200/80',
+        destructive:
+          'bg-red-50 text-red-700 border border-red-200/80',
         outline:
-          'text-zinc-300 border border-zinc-700',
+          'text-zinc-700 border border-zinc-300 bg-white',
+        muted:
+          'bg-zinc-100 text-zinc-600 border border-zinc-200',
+      },
+      size: {
+        sm: 'px-2 py-0.5 text-[11px] gap-1',
+        default: 'px-2.5 py-0.5 text-xs gap-1.5',
+        lg: 'px-3 py-1 text-xs gap-1.5',
       },
     },
     defaultVariants: {
       variant: 'default',
+      size: 'default',
     },
   }
 );
@@ -31,6 +40,10 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {}
 
-export function Badge({ className, variant, ...props }: BadgeProps) {
-  return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
+function Badge({ className, variant, size, ...props }: BadgeProps) {
+  return (
+    <div className={badgeVariants({ variant, size, className })} {...props} />
+  );
 }
+
+export { Badge, badgeVariants };

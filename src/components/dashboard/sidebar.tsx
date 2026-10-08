@@ -15,8 +15,7 @@ import {
   Activity,
   Settings,
   LogOut,
-  Bot,
-  Sparkles,
+  Workflow,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -48,44 +47,33 @@ export function Sidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 shrink-0 bg-zinc-950/90 border-r border-zinc-800/80 flex flex-col justify-between h-screen sticky top-0 backdrop-blur-xl selection:bg-indigo-500 selection:text-white">
-      {/* Top Header & Workspace Switcher */}
+    <aside className="w-60 shrink-0 bg-white border-r border-zinc-200/80 flex flex-col justify-between h-screen sticky top-0 z-30">
+      {/* Top Header & Navigation */}
       <div className="p-4 space-y-4">
         {/* Brand Logo */}
-        <Link href="/overview" className="flex items-center gap-2.5 px-1 group">
-          <div className="h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <Bot className="h-4 w-4 text-white" />
+        <Link href="/overview" className="flex items-center gap-2.5 px-2 py-1 group">
+          <div className="h-7 w-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-xs">
+            <Workflow className="h-4 w-4" />
           </div>
           <div>
-            <div className="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
-              FlowPilot <span className="text-indigo-400 font-medium text-xs">AI</span>
+            <div className="text-sm font-semibold tracking-tight text-zinc-900 leading-tight">
+              FlowPilot <span className="text-indigo-600 font-normal">AI</span>
             </div>
-            <div className="text-[10px] text-zinc-500 font-medium">Small Business Automation</div>
+            <div className="text-[11px] text-zinc-500 font-normal">Workflow Automation</div>
           </div>
         </Link>
 
         {/* Workspace Switcher */}
-        <WorkspaceSwitcher
-          currentWorkspace={currentWorkspace}
-          userRole={userRole}
-          allWorkspaces={allWorkspaces}
-        />
-
-        {/* Demo Mode Badge */}
-        {currentWorkspace.is_demo_mode && (
-          <div className="px-3 py-1.5 rounded-lg bg-indigo-950/40 border border-indigo-500/20 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[11px] text-indigo-300 font-medium">
-              <Sparkles className="h-3 w-3 text-indigo-400" />
-              <span>Demo Adapters Active</span>
-            </div>
-            <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono font-semibold">
-              SANDBOX
-            </span>
-          </div>
-        )}
+        <div className="pt-1">
+          <WorkspaceSwitcher
+            currentWorkspace={currentWorkspace}
+            userRole={userRole}
+            allWorkspaces={allWorkspaces}
+          />
+        </div>
 
         {/* Navigation Links */}
-        <nav className="space-y-1 pt-2">
+        <nav className="space-y-1 pt-3">
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
@@ -94,13 +82,13 @@ export function Sidebar({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                   isActive
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900/80'
+                    ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50'
                 }`}
               >
-                <Icon className={`h-4 w-4 ${isActive ? 'text-white' : 'text-zinc-400'}`} />
+                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
                 <span>{item.label}</span>
               </Link>
             );
@@ -108,19 +96,18 @@ export function Sidebar({
         </nav>
       </div>
 
-      {/* Footer / User Profile & Logout */}
-      <div className="p-4 border-t border-zinc-900 space-y-3">
-        {/* User Card */}
-        <div className="flex items-center justify-between px-2 py-1.5">
-          <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="h-7 w-7 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-200">
+      {/* Account & User Controls at bottom */}
+      <div className="p-4 border-t border-zinc-200/80 bg-zinc-50/50">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="h-7 w-7 rounded-full bg-zinc-200 text-zinc-700 flex items-center justify-center text-[11px] font-semibold shrink-0">
               {getInitials(currentUser.fullName || currentUser.email)}
             </div>
-            <div className="truncate">
-              <div className="text-xs font-medium text-zinc-200 truncate">
+            <div className="min-w-0">
+              <div className="text-xs font-medium text-zinc-900 truncate">
                 {currentUser.fullName || currentUser.email.split('@')[0]}
               </div>
-              <div className="text-[10px] text-zinc-500 truncate">
+              <div className="text-[11px] text-zinc-500 truncate">
                 {currentUser.email}
               </div>
             </div>
@@ -129,8 +116,8 @@ export function Sidebar({
           <form action={signOutAction}>
             <button
               type="submit"
+              className="p-1.5 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-200/60 transition-colors cursor-pointer"
               title="Sign Out"
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
             >
               <LogOut className="h-4 w-4" />
             </button>

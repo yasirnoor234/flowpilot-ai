@@ -37,23 +37,23 @@ export function WorkspaceSwitcher({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isPending}
-        className="w-full flex items-center justify-between gap-3 px-3 py-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800/80 border border-zinc-800 text-left transition-all group"
+        className="w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-lg bg-zinc-50 hover:bg-zinc-100/80 border border-zinc-200/80 text-left transition-colors cursor-pointer"
       >
-        <div className="flex items-center gap-2.5 overflow-hidden">
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 text-white font-bold text-xs shadow-sm">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="h-6 w-6 rounded-md bg-indigo-600 flex items-center justify-center shrink-0 text-white font-semibold text-[11px] shadow-xs">
             {currentWorkspace.name.substring(0, 2).toUpperCase()}
           </div>
-          <div className="truncate">
-            <div className="text-xs font-semibold text-zinc-100 truncate group-hover:text-indigo-300 transition-colors">
+          <div className="min-w-0">
+            <div className="text-xs font-semibold text-zinc-900 truncate">
               {currentWorkspace.name}
             </div>
-            <div className="text-[10px] text-zinc-400 capitalize flex items-center gap-1">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <div className="text-[10px] text-zinc-500 capitalize flex items-center gap-1">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
               {userRole}
             </div>
           </div>
         </div>
-        <ChevronsUpDown className="h-4 w-4 text-zinc-500 shrink-0 group-hover:text-zinc-300" />
+        <ChevronsUpDown className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
       </button>
 
       {isOpen && (
@@ -62,39 +62,39 @@ export function WorkspaceSwitcher({
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute top-full left-0 right-0 mt-2 z-50 rounded-xl border border-zinc-800 bg-zinc-900 shadow-2xl p-1.5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-100">
-            <div className="px-2 py-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+          <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-lg border border-zinc-200 bg-white shadow-lg p-1 animate-in fade-in zoom-in-95 duration-100">
+            <div className="px-2 py-1 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
               Workspaces ({allWorkspaces.length})
             </div>
 
-            <div className="space-y-1 max-h-56 overflow-y-auto">
+            <div className="space-y-0.5 max-h-56 overflow-y-auto">
               {allWorkspaces.map(({ workspace }) => {
                 const isSelected = workspace.id === currentWorkspace.id;
                 return (
                   <button
                     key={workspace.id}
                     onClick={() => handleSelectWorkspace(workspace.id)}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs transition-colors ${
+                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs transition-colors cursor-pointer ${
                       isSelected
-                        ? 'bg-indigo-600/15 text-indigo-300 font-medium'
-                        : 'text-zinc-300 hover:bg-zinc-800/80 hover:text-white'
+                        ? 'bg-indigo-50 text-indigo-700 font-medium'
+                        : 'text-zinc-700 hover:bg-zinc-50'
                     }`}
                   >
                     <div className="flex items-center gap-2 truncate">
                       <Building2 className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
                       <span className="truncate">{workspace.name}</span>
                     </div>
-                    {isSelected && <Check className="h-3.5 w-3.5 text-indigo-400 shrink-0" />}
+                    {isSelected && <Check className="h-3.5 w-3.5 text-indigo-600 shrink-0" />}
                   </button>
                 );
               })}
             </div>
 
-            <div className="mt-1 pt-1 border-t border-zinc-800/80">
+            <div className="mt-1 pt-1 border-t border-zinc-100">
               <Link
                 href="/onboarding"
                 onClick={() => setIsOpen(false)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-indigo-400 hover:bg-indigo-500/10 transition-colors font-medium"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs text-indigo-600 hover:bg-indigo-50 transition-colors font-medium"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Create New Workspace</span>

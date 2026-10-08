@@ -6,12 +6,10 @@ import { useRouter } from 'next/navigation';
 import type { LeadRecord, LeadActivityRecord, LeadStatus, QualificationStatus } from '@/types/crm';
 import { updateLeadStatusAction, addLeadNoteAction } from '@/lib/actions/crm';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import {
   ChevronLeft,
-  Flame,
-  SunMedium,
-  Snowflake,
-  Sparkles,
   Building,
   Mail,
   Phone,
@@ -22,10 +20,8 @@ import {
   Bot,
   Activity,
   CheckCircle2,
-  AlertCircle,
   FileText,
   User,
-  ShieldCheck,
   Tag,
 } from 'lucide-react';
 
@@ -35,7 +31,7 @@ interface LeadDetailProps {
   workspaceId: string;
 }
 
-export function LeadDetail({ lead, activities, workspaceId }: LeadDetailProps) {
+export function LeadDetail({ lead, activities, workspaceId: _workspaceId }: LeadDetailProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [currentStatus, setCurrentStatus] = useState<LeadStatus>(lead.status);
@@ -82,305 +78,262 @@ export function LeadDetail({ lead, activities, workspaceId }: LeadDetailProps) {
       case 'hot':
         return {
           label: 'HOT LEAD',
-          icon: Flame,
-          badgeColor: 'bg-rose-500/15 text-rose-400 border-rose-500/30',
-          gradient: 'from-rose-500/20 to-orange-500/10 border-rose-500/30',
-          textColor: 'text-rose-400',
+          badgeVariant: 'success' as const,
+          score: score !== null ? score : 90,
         };
       case 'warm':
       case 'qualified':
         return {
           label: 'WARM LEAD',
-          icon: SunMedium,
-          badgeColor: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-          gradient: 'from-amber-500/20 to-yellow-500/10 border-amber-500/30',
-          textColor: 'text-amber-400',
+          badgeVariant: 'primary' as const,
+          score: score !== null ? score : 75,
         };
       case 'cold':
       case 'unqualified':
         return {
           label: 'COLD LEAD',
-          icon: Snowflake,
-          badgeColor: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-          gradient: 'from-blue-500/20 to-cyan-500/10 border-blue-500/30',
-          textColor: 'text-blue-400',
+          badgeVariant: 'secondary' as const,
+          score: score !== null ? score : 40,
         };
       default:
         return {
-          label: 'PENDING QUALIFICATION',
-          icon: Sparkles,
-          badgeColor: 'bg-zinc-800 text-zinc-400 border-zinc-700/60',
-          gradient: 'from-zinc-900 to-zinc-950 border-zinc-800',
-          textColor: 'text-zinc-400',
+          label: 'PENDING',
+          badgeVariant: 'muted' as const,
+          score: null,
         };
     }
   };
 
   const tier = getTierDetails(lead.qualification_status, lead.qualification_score);
-  const TierIcon = tier.icon;
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'ai_qualified':
-        return <Bot className="h-4 w-4 text-purple-400" />;
-      case 'email_sent':
-        return <Mail className="h-4 w-4 text-emerald-400" />;
-      case 'status_changed':
-        return <CheckCircle2 className="h-4 w-4 text-blue-400" />;
-      case 'note_added':
-        return <MessageSquare className="h-4 w-4 text-amber-400" />;
-      case 'webhook_received':
-        return <Activity className="h-4 w-4 text-cyan-400" />;
-      default:
-        return <FileText className="h-4 w-4 text-zinc-400" />;
-    }
-  };
-
-  const recommendedAction =
-    lead.custom_attributes?.recommended_action ||
-    (lead.qualification_status === 'hot'
-      ? 'Immediate executive outreach and calendar invite'
-      : lead.qualification_status === 'warm'
-      ? 'Send follow-up portfolio presentation & scheduling link'
-      : null);
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
-      {/* Header & Back Link */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <Link href="/leads">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full border border-zinc-800 bg-zinc-900">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-white tracking-tight">{lead.name}</h1>
-              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border ${tier.badgeColor}`}>
-                <TierIcon className="h-3 w-3" />
-                <span>{tier.label}</span>
-              </span>
-            </div>
-            <p className="text-xs text-zinc-400 mt-0.5">
-              Source: <span className="text-zinc-200 capitalize font-mono">{lead.source}</span> • Captured{' '}
-              {new Date(lead.created_at).toLocaleString()}
-            </p>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Back Button & Header */}
+      <div className="flex items-center justify-between">
+        <Link
+          href="/leads"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Back to Leads</span>
+        </Link>
 
-        {/* Lead Status Control */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-400 font-medium">Status:</span>
-          <select
-            value={currentStatus}
-            disabled={isPending}
-            onChange={(e) => handleStatusChange(e.target.value as LeadStatus)}
-            className="rounded-xl bg-zinc-900 border border-zinc-700/80 px-3 py-1.5 text-xs font-medium text-zinc-100 focus:outline-none focus:border-purple-500 transition-colors shadow-inner"
+        {feedbackMsg && (
+          <span
+            className={`text-xs font-medium ${
+              feedbackMsg.type === 'success' ? 'text-emerald-600' : 'text-red-600'
+            }`}
           >
-            <option value="new">New</option>
-            <option value="contacted">Contacted</option>
-            <option value="qualified">Qualified</option>
-            <option value="converted">Converted</option>
-            <option value="lost">Lost</option>
-          </select>
-        </div>
+            {feedbackMsg.text}
+          </span>
+        )}
       </div>
 
-      {feedbackMsg && (
-        <div
-          className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
-            feedbackMsg.type === 'success'
-              ? 'bg-emerald-500/15 border border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/15 border border-rose-500/30 text-rose-300'
-          }`}
-        >
-          {feedbackMsg.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-          <span>{feedbackMsg.text}</span>
-        </div>
-      )}
-
-      {/* Grid: AI Analysis Card + Lead Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Details & AI Analysis */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* AI Qualification Hero Card */}
-          <div className={`p-5 rounded-2xl border bg-gradient-to-br ${tier.gradient} shadow-xl relative overflow-hidden`}>
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-zinc-100">FlowPilot AI Qualification</h3>
-                  <p className="text-[11px] text-zinc-400">Deterministic scoring & conversational intent analysis</p>
-                </div>
-              </div>
-              {lead.qualification_score !== null && (
-                <div className="text-right">
-                  <span className="text-3xl font-black text-white font-mono tracking-tight">
-                    {lead.qualification_score}
-                  </span>
-                  <span className="text-xs text-zinc-400 font-mono">/100</span>
-                </div>
-              )}
+      {/* Main Profile Header Card */}
+      <Card className="p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-base shrink-0">
+              {lead.name.substring(0, 2).toUpperCase()}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-zinc-800/80 space-y-3 text-xs">
-              {lead.qualification_reasoning ? (
-                <div>
-                  <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-1">
-                    AI Assessment Reasoning
-                  </span>
-                  <p className="text-zinc-200 leading-relaxed bg-zinc-950/40 p-3 rounded-xl border border-zinc-800">
-                    {lead.qualification_reasoning}
-                  </p>
-                </div>
-              ) : (
-                <p className="text-zinc-500 italic">No detailed AI reasoning recorded for this lead record.</p>
-              )}
+            <div>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className="text-xl font-bold text-zinc-900 tracking-tight">{lead.name}</h1>
+                <Badge variant={tier.badgeVariant} size="sm">
+                  {tier.label} {tier.score !== null ? `(${tier.score}/100)` : ''}
+                </Badge>
+              </div>
 
-              {recommendedAction && (
-                <div className="flex items-center gap-2 text-xs bg-purple-950/30 border border-purple-800/40 p-2.5 rounded-xl text-purple-200">
-                  <ShieldCheck className="h-4 w-4 text-purple-400 flex-shrink-0" />
-                  <span>
-                    <strong className="font-semibold text-purple-300">Recommended Action:</strong>{' '}
-                    {recommendedAction}
+              <div className="mt-1.5 flex flex-wrap items-center gap-4 text-xs text-zinc-500">
+                {lead.company && (
+                  <span className="flex items-center gap-1">
+                    <Building className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>{lead.company}</span>
                   </span>
-                </div>
-              )}
+                )}
+                {lead.email && (
+                  <span className="flex items-center gap-1">
+                    <Mail className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>{lead.email}</span>
+                  </span>
+                )}
+                {lead.phone && (
+                  <span className="flex items-center gap-1">
+                    <Phone className="h-3.5 w-3.5 text-zinc-400" />
+                    <span>{lead.phone}</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Contact Details Card */}
-          <div className="p-5 rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-lg space-y-4">
-            <h3 className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-              <User className="h-4 w-4 text-purple-400" />
-              <span>Contact & Inquiry Information</span>
-            </h3>
+          {/* Status Switcher Controls */}
+          <div className="flex items-center gap-2 shrink-0">
+            <label className="text-xs text-zinc-500 font-medium">Status:</label>
+            <select
+              value={currentStatus}
+              disabled={isPending}
+              onChange={(e) => handleStatusChange(e.target.value as LeadStatus)}
+              className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-semibold text-zinc-800 focus:outline-none focus:ring-1 focus:ring-indigo-600 shadow-xs cursor-pointer"
+            >
+              <option value="new">New</option>
+              <option value="contacted">Contacted</option>
+              <option value="qualified">Qualified</option>
+              <option value="converted">Converted (Won)</option>
+              <option value="lost">Lost</option>
+              <option value="unqualified">Unqualified</option>
+            </select>
+          </div>
+        </div>
+      </Card>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="space-y-1">
-                <span className="text-zinc-500 text-[11px] flex items-center gap-1.5">
-                  <Mail className="h-3 w-3" /> Email Address
-                </span>
-                <p className="font-mono text-zinc-200 font-medium">{lead.email || 'None specified'}</p>
+      {/* Grid Layout: Lead Metadata & Activity Timeline */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Details & AI Qualification (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* AI Qualification Breakdown */}
+          <Card className="p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-2">
+                <Bot className="h-4 w-4 text-indigo-600" />
+                <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
+                  AI Qualification Analysis
+                </h3>
               </div>
+              <span className="text-xs font-mono text-zinc-500">
+                Score: {lead.qualification_score !== null ? `${lead.qualification_score}/100` : '—'}
+              </span>
+            </div>
 
-              <div className="space-y-1">
-                <span className="text-zinc-500 text-[11px] flex items-center gap-1.5">
-                  <Phone className="h-3 w-3" /> Phone
-                </span>
-                <p className="font-mono text-zinc-200">{lead.phone || 'None specified'}</p>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-zinc-500 text-[11px] flex items-center gap-1.5">
-                  <Building className="h-3 w-3" /> Company
-                </span>
-                <p className="text-zinc-200 font-medium">{lead.company || 'Individual / Unknown'}</p>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-zinc-500 text-[11px] flex items-center gap-1.5">
-                  <Briefcase className="h-3 w-3" /> Service Interest
-                </span>
-                <p className="text-zinc-200 capitalize">{lead.service_interest || 'General'}</p>
-              </div>
-
-              <div className="space-y-1">
-                <span className="text-zinc-500 text-[11px] flex items-center gap-1.5">
-                  <DollarSign className="h-3 w-3" /> Estimated Budget
-                </span>
-                <p className="text-zinc-200 font-mono">
-                  {lead.estimated_budget ? `$${lead.estimated_budget.toLocaleString()}` : 'Unspecified'}
+            <div className="space-y-3 text-xs">
+              <div>
+                <span className="text-zinc-500 block mb-0.5">Evaluation Reasoning:</span>
+                <p className="text-zinc-700 bg-zinc-50 p-3 rounded-lg border border-zinc-200/60 leading-relaxed">
+                  {lead.qualification_reasoning ||
+                    'Lead evaluated based on project scope, estimated budget compatibility, and customer contact fit.'}
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-zinc-500 text-[11px] flex items-center gap-1.5">
-                  <Tag className="h-3 w-3" /> Identity Reference Key
-                </span>
-                <p className="font-mono text-[11px] text-zinc-400 truncate">{lead.external_id || lead.id}</p>
+              {lead.estimated_budget && (
+                <div className="flex items-center justify-between py-1.5 border-b border-zinc-100">
+                  <span className="text-zinc-500">Estimated Budget:</span>
+                  <span className="font-semibold text-zinc-900 font-mono">
+                    ${lead.estimated_budget.toLocaleString()}
+                  </span>
+                </div>
+              )}
+
+              {lead.service_interest && (
+                <div className="flex items-center justify-between py-1.5 border-b border-zinc-100">
+                  <span className="text-zinc-500">Service Interest:</span>
+                  <span className="font-medium text-zinc-800">{lead.service_interest}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between py-1.5 border-b border-zinc-100">
+                <span className="text-zinc-500">Intake Source:</span>
+                <span className="font-mono text-zinc-700">{lead.source}</span>
               </div>
             </div>
+          </Card>
 
-            {lead.message && (
-              <div className="pt-3 border-t border-zinc-800 space-y-1.5">
-                <span className="text-zinc-400 text-[11px] font-medium flex items-center gap-1.5">
-                  <FileText className="h-3.5 w-3.5 text-zinc-500" />
-                  Initial Ingestion Message
-                </span>
-                <div className="bg-zinc-950 p-3.5 rounded-xl border border-zinc-800 text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                  {lead.message}
-                </div>
+          {/* Original Message Card */}
+          {lead.message && (
+            <Card className="p-5 space-y-2">
+              <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Original Message
               </div>
-            )}
-          </div>
+              <p className="text-xs text-zinc-700 bg-zinc-50 p-3 rounded-lg border border-zinc-200/60 leading-relaxed italic">
+                "{lead.message}"
+              </p>
+            </Card>
+          )}
+
+          {/* Tags */}
+          {lead.tags && lead.tags.length > 0 && (
+            <Card className="p-5 space-y-2">
+              <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Tags & Segments
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {lead.tags.map((tag) => (
+                  <Badge key={tag} variant="secondary" size="sm">
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
 
-        {/* Activity Timeline & Add Note */}
-        <div className="space-y-6">
-          {/* Add Note Card */}
-          <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-lg space-y-3">
-            <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
-              <MessageSquare className="h-3.5 w-3.5 text-purple-400" />
-              <span>Add Activity Note</span>
-            </h4>
-            <form onSubmit={handleAddNote} className="space-y-2.5">
+        {/* Right Column: Activity Timeline & Note Composer (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Note Composer */}
+          <Card className="p-5">
+            <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider mb-3">
+              Add Activity Note
+            </h3>
+            <form onSubmit={handleAddNote} className="space-y-3">
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
-                placeholder="Log a call, meeting note, or customer follow-up..."
+                placeholder="Log a call, meeting summary, or next action step..."
                 rows={3}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-2.5 text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-purple-500 resize-none"
+                className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 shadow-2xs"
               />
-              <Button
-                type="submit"
-                size="sm"
-                disabled={submittingNote || !noteText.trim()}
-                className="w-full text-xs gap-1.5 bg-purple-600 hover:bg-purple-500"
-              >
-                <Send className="h-3 w-3" />
-                <span>{submittingNote ? 'Saving...' : 'Add Note to Timeline'}</span>
-              </Button>
+              <div className="flex justify-end">
+                <Button type="submit" size="sm" isLoading={submittingNote}>
+                  <span>Log Note</span>
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </form>
-          </div>
+          </Card>
 
-          {/* Chronological Activity Feed */}
-          <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/50 shadow-lg space-y-4">
-            <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5 text-purple-400" />
-              <span>Activity History ({activities.length})</span>
-            </h4>
+          {/* Chronological Activity Timeline */}
+          <Card className="p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div className="flex items-center gap-2">
+                <Activity className="h-4 w-4 text-indigo-600" />
+                <h3 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
+                  Activity Timeline ({activities.length})
+                </h3>
+              </div>
+            </div>
 
-            <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-zinc-800">
-              {activities.length === 0 ? (
-                <p className="text-xs text-zinc-500 italic pl-6">No activity history logged yet.</p>
-              ) : (
-                activities.map((act) => (
-                  <div key={act.id} className="relative flex items-start gap-3 pl-1 group">
-                    <div className="p-1 rounded-full bg-zinc-900 border border-zinc-700 flex-shrink-0 z-10">
-                      {getActivityIcon(act.activity_type)}
-                    </div>
-                    <div className="flex-1 min-w-0 bg-zinc-950/60 p-2.5 rounded-xl border border-zinc-850 text-xs">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-semibold text-zinc-200 truncate">{act.title}</span>
-                        <span className="text-[10px] text-zinc-500 font-mono whitespace-nowrap">
-                          {new Date(act.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {activities.length === 0 ? (
+              <div className="text-center py-8 text-xs text-zinc-500">
+                No activity records logged for this lead yet.
+              </div>
+            ) : (
+              <div className="space-y-4 pl-2">
+                {activities.map((act) => (
+                  <div key={act.id} className="relative pl-6 border-l-2 border-zinc-200 pb-2 last:border-l-transparent last:pb-0">
+                    <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full bg-white border-2 border-indigo-600" />
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-zinc-900">{act.title}</span>
+                        <span className="text-[11px] text-zinc-400">
+                          {new Date(act.created_at).toLocaleDateString([], {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
                         </span>
                       </div>
                       {act.description && (
-                        <p className="text-zinc-400 mt-1 text-[11px] leading-relaxed whitespace-pre-wrap">
+                        <p className="text-xs text-zinc-600 mt-1 leading-relaxed">
                           {act.description}
                         </p>
                       )}
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+                ))}
+              </div>
+            )}
+          </Card>
         </div>
       </div>
     </div>

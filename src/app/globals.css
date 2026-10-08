@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core Base Colors */
+  --background: #FAFAF8;
+  --surface: #FFFFFF;
+  --surface-subtle: #F4F4F5;
+  --surface-hover: #F8F8FA;
+  
+  /* Text & Content */
+  --foreground: #18181B;
+  --foreground-muted: #52525B;
+  --foreground-subtle: #71717A;
+  
+  /* Borders & Dividers */
+  --border: #E4E4E7;
+  --border-subtle: #F4F4F5;
+  --border-strong: #D4D4D8;
+  
+  /* Brand / Primary Accent */
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-subtle: #EEF2FF;
+  --primary-foreground: #FFFFFF;
+  
+  /* Status: Success */
+  --success: #16A34A;
+  --success-subtle: #F0FDF4;
+  --success-border: #BBF7D0;
+  --success-foreground: #15803D;
+
+  /* Status: Warning */
+  --warning: #D97706;
+  --warning-subtle: #FFFBEB;
+  --warning-border: #FDE68A;
+  --warning-foreground: #B45309;
+
+  /* Status: Destructive / Error */
+  --destructive: #DC2626;
+  --destructive-subtle: #FEF2F2;
+  --destructive-border: #FECACA;
+  --destructive-foreground: #B91C1C;
+
+  /* Focus Ring */
+  --ring: #4F46E5;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-foreground-muted: var(--foreground-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --font-sans: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular figures for numbers, metrics, and timestamps */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #E4E4E7;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #D4D4D8;
 }

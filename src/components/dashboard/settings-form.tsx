@@ -44,7 +44,7 @@ export function SettingsForm({
       if (result.error) {
         setWorkspaceMessage({ text: result.error, type: 'error' });
       } else {
-        setWorkspaceMessage({ text: 'Workspace settings updated successfully!', type: 'success' });
+        setWorkspaceMessage({ text: 'Workspace settings updated successfully.', type: 'success' });
       }
     } catch (err: unknown) {
       setWorkspaceMessage({
@@ -68,7 +68,7 @@ export function SettingsForm({
       if (result.error) {
         setMemberMessage({ text: result.error, type: 'error' });
       } else {
-        setMemberMessage({ text: 'Member successfully added to workspace!', type: 'success' });
+        setMemberMessage({ text: 'Member added to workspace.', type: 'success' });
         form.reset();
       }
     } catch (err: unknown) {
@@ -109,13 +109,13 @@ export function SettingsForm({
   return (
     <div className="space-y-8">
       {/* 1. General Workspace Settings */}
-      <Card className="border-zinc-800 bg-zinc-900/50">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base text-white flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-indigo-400" />
-            <span>Workspace Profile</span>
+          <CardTitle className="text-base text-zinc-900 flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-zinc-500" />
+            <span>Workspace profile</span>
           </CardTitle>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-xs text-zinc-500">
             Manage workspace name and execution preferences.
           </CardDescription>
         </CardHeader>
@@ -125,14 +125,14 @@ export function SettingsForm({
               <div
                 className={`flex items-center gap-2 rounded-lg p-3 text-xs ${
                   workspaceMessage.type === 'success'
-                    ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                    : 'border border-red-500/30 bg-red-500/10 text-red-300'
+                    ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
+                    : 'border border-red-200 bg-red-50 text-red-800'
                 }`}
               >
                 {workspaceMessage.type === 'success' ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                 ) : (
-                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
                 )}
                 <span>{workspaceMessage.text}</span>
               </div>
@@ -148,10 +148,10 @@ export function SettingsForm({
             />
 
             <div className="space-y-1">
-              <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
-                Workspace Slug / Identifier
+              <label className="block text-xs font-medium text-zinc-700">
+                Workspace slug
               </label>
-              <div className="text-xs font-mono bg-zinc-950 px-3 py-2 rounded-lg border border-zinc-800 text-zinc-400">
+              <div className="text-xs font-mono bg-zinc-50 px-3 py-2 rounded-lg border border-zinc-200 text-zinc-600">
                 {workspace.slug}
               </div>
             </div>
@@ -163,17 +163,17 @@ export function SettingsForm({
                 type="checkbox"
                 defaultChecked={workspace.is_demo_mode}
                 disabled={!isOwner}
-                className="h-4 w-4 rounded border-zinc-700 bg-zinc-900 text-indigo-600 focus:ring-indigo-500"
+                className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500"
               />
-              <label htmlFor="isDemoMode" className="text-xs text-zinc-300 cursor-pointer">
-                Enable Demo Adapters (Allows running mock OpenAI/Resend/Slack flows without API keys)
+              <label htmlFor="isDemoMode" className="text-xs text-zinc-700 cursor-pointer">
+                Enable demo adapters (runs simulation OpenAI, Resend, and Slack without live API keys)
               </label>
             </div>
 
             {isOwner && (
               <div className="pt-2">
                 <Button type="submit" size="sm" isLoading={isUpdatingWorkspace}>
-                  Save Workspace Changes
+                  Save changes
                 </Button>
               </div>
             )}
@@ -182,37 +182,37 @@ export function SettingsForm({
       </Card>
 
       {/* 2. Team Member Management */}
-      <Card className="border-zinc-800 bg-zinc-900/50">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-base text-white flex items-center gap-2">
-            <Users className="h-4 w-4 text-indigo-400" />
-            <span>Workspace Members ({members.length})</span>
+          <CardTitle className="text-base text-zinc-900 flex items-center gap-2">
+            <Users className="h-4 w-4 text-zinc-500" />
+            <span>Workspace members ({members.length})</span>
           </CardTitle>
-          <CardDescription className="text-xs">
-            Manage who has access to this workspace and assign Owner or Member roles.
+          <CardDescription className="text-xs text-zinc-500">
+            Manage who has access to this workspace and assign roles.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Invite Member Section (Owners Only) */}
           {isOwner && (
-            <form onSubmit={handleInviteMember} className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/50 space-y-3">
-              <h4 className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
-                <UserPlus className="h-3.5 w-3.5 text-indigo-400" />
-                <span>Add Member to Workspace</span>
+            <form onSubmit={handleInviteMember} className="p-4 rounded-xl border border-zinc-200 bg-zinc-50 space-y-3">
+              <h4 className="text-xs font-semibold text-zinc-900 flex items-center gap-1.5">
+                <UserPlus className="h-3.5 w-3.5 text-zinc-500" />
+                <span>Add member to workspace</span>
               </h4>
 
               {memberMessage && (
                 <div
                   className={`flex items-center gap-2 rounded-lg p-2.5 text-xs ${
                     memberMessage.type === 'success'
-                      ? 'border border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                      : 'border border-red-500/30 bg-red-500/10 text-red-300'
+                      ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
+                      : 'border border-red-200 bg-red-50 text-red-800'
                   }`}
                 >
                   {memberMessage.type === 'success' ? (
-                    <CheckCircle2 className="h-4 w-4 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
                   )}
                   <span>{memberMessage.text}</span>
                 </div>
@@ -231,7 +231,7 @@ export function SettingsForm({
                   <select
                     name="role"
                     defaultValue="member"
-                    className="flex h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900/70 px-3 py-2 text-sm text-zinc-100 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="flex h-10 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                   >
                     <option value="member">Member</option>
                     <option value="owner">Owner</option>
@@ -241,33 +241,33 @@ export function SettingsForm({
 
               <div className="flex justify-end">
                 <Button type="submit" size="sm" isLoading={isInviting}>
-                  Add Member
+                  Add member
                 </Button>
               </div>
             </form>
           )}
 
           {/* Members List Table */}
-          <div className="divide-y divide-zinc-800/60 rounded-xl border border-zinc-800 overflow-hidden">
+          <div className="divide-y divide-zinc-100 rounded-xl border border-zinc-200 overflow-hidden">
             {members.map((member) => {
               const isCurrentUser = member.user_id === currentUserId;
               return (
                 <div
                   key={member.id}
-                  className="flex items-center justify-between p-3.5 hover:bg-zinc-900/40 transition-colors"
+                  className="flex items-center justify-between p-3.5 hover:bg-zinc-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200">
+                    <div className="h-8 w-8 rounded-full bg-zinc-100 border border-zinc-200 flex items-center justify-center text-xs font-semibold text-zinc-700">
                       {getInitials(member.profile?.full_name || member.profile?.email)}
                     </div>
                     <div>
-                      <div className="text-xs font-medium text-white flex items-center gap-2">
+                      <div className="text-xs font-semibold text-zinc-900 flex items-center gap-2">
                         <span>{member.profile?.full_name || member.profile?.email?.split('@')[0] || 'Member'}</span>
                         {isCurrentUser && (
-                          <Badge variant="outline" className="text-[10px] py-0">You</Badge>
+                          <Badge variant="secondary" className="text-[10px] py-0 font-normal">You</Badge>
                         )}
                       </div>
-                      <div className="text-[11px] text-zinc-400">
+                      <div className="text-[11px] text-zinc-500">
                         {member.profile?.email || '—'}
                       </div>
                     </div>
@@ -278,13 +278,13 @@ export function SettingsForm({
                       <select
                         value={member.role}
                         onChange={(e) => handleRoleChange(member.id, e.target.value as WorkspaceRole)}
-                        className="rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-200 focus:border-indigo-500 focus:outline-none"
+                        className="rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-xs text-zinc-700 focus:border-indigo-500 focus:outline-none"
                       >
                         <option value="owner">Owner</option>
                         <option value="member">Member</option>
                       </select>
                     ) : (
-                      <Badge variant={member.role === 'owner' ? 'default' : 'secondary'}>
+                      <Badge variant={member.role === 'owner' ? 'primary' : 'secondary'} className="capitalize">
                         {member.role}
                       </Badge>
                     )}
@@ -292,7 +292,7 @@ export function SettingsForm({
                     {isOwner && !isCurrentUser && (
                       <button
                         onClick={() => handleRemoveMember(member.id, member.profile?.email)}
-                        className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        className="h-8 w-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                         title="Remove member"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -308,3 +308,4 @@ export function SettingsForm({
     </div>
   );
 }
+

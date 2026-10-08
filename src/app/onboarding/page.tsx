@@ -5,7 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { createWorkspaceAction } from '@/lib/actions/workspaces';
-import { AlertCircle, ArrowRight, Building2, Sparkles, CheckCircle2 } from 'lucide-react';
+import { AlertCircle, ArrowRight, Building2, CheckCircle2, Workflow } from 'lucide-react';
+import Link from 'next/link';
 
 export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
@@ -33,38 +34,40 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col justify-center items-center p-4 selection:bg-indigo-500 selection:text-white">
-      {/* Background Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] rounded-full bg-indigo-600/15 blur-[140px] pointer-events-none" />
-
-      <div className="w-full max-w-lg z-10">
+    <div className="min-h-screen bg-[#FAFAF8] text-zinc-900 flex flex-col justify-center items-center p-4 selection:bg-indigo-500 selection:text-white">
+      <div className="w-full max-w-lg">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-4">
-            <Sparkles className="h-3.5 w-3.5" /> Workspace Onboarding
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
+          <Link href="/" className="inline-flex items-center gap-2.5 mb-6">
+            <div className="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm">
+              <Workflow className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-zinc-900">
+              FlowPilot <span className="text-indigo-600 font-semibold">AI</span>
+            </span>
+          </Link>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">
             Name your workspace
           </h1>
-          <p className="text-sm text-zinc-400 mt-2">
-            Workspaces keep your AI workflows, leads, and integration credentials isolated.
+          <p className="text-sm text-zinc-500 mt-1.5">
+            Workspaces keep your workflows, leads, and connected tools organized.
           </p>
         </div>
 
-        <Card className="border-zinc-800 bg-zinc-900/80 shadow-2xl backdrop-blur-xl">
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-indigo-400" />
-              <span>Workspace Setup</span>
+            <CardTitle className="text-base font-semibold flex items-center gap-2 text-zinc-900">
+              <Building2 className="h-4 w-4 text-zinc-500" />
+              <span>Workspace setup</span>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs text-zinc-500">
               You will be assigned as the Workspace Owner with full administrative controls.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
-                <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
+                <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
                   <span>{error}</span>
                 </div>
               )}
@@ -73,31 +76,31 @@ export default function OnboardingPage() {
                 id="name"
                 name="name"
                 type="text"
-                label="Organization / Company Name"
+                label="Organization or Company Name"
                 placeholder="Acme Revenue Systems"
                 required
                 defaultValue="My Company Workspace"
                 helperText="You can invite team members and add integrations after setup."
               />
 
-              <div className="rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-3.5 text-xs text-zinc-400 space-y-2">
-                <div className="font-medium text-zinc-200">Included in your workspace:</div>
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3.5 text-xs text-zinc-600 space-y-2">
+                <div className="font-medium text-zinc-900">Included in your workspace:</div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  <span>Row Level Security (RLS) tenant isolation</span>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Isolated workspace data and permissions</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  <span>Built-in CRM & Lead Activity Inbox</span>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Lead capture and CRM pipeline</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                  <span>Serverless Inngest Durable Workflow Orchestrator</span>
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                  <span>Automated email, Slack, and AI qualification actions</span>
                 </div>
               </div>
 
               <Button type="submit" className="w-full mt-4" size="lg" isLoading={loading}>
-                <span>Launch Workspace</span>
+                <span>Launch workspace</span>
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </form>
@@ -107,3 +110,4 @@ export default function OnboardingPage() {
     </div>
   );
 }
+

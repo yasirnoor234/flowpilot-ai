@@ -1,43 +1,35 @@
 import * as React from 'react';
-import { cn } from '@/lib/utils';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
+  error?: boolean;
   helperText?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, label, error, helperText, id, ...props }, ref) => {
-    const generatedId = React.useId();
-    const inputId = id || generatedId;
-
+  ({ className = '', type = 'text', label, error, helperText, id, ...props }, ref) => {
     return (
-      <div className="w-full space-y-1.5 text-left">
+      <div className="space-y-1.5 w-full">
         {label && (
-          <label
-            htmlFor={inputId}
-            className="block text-xs font-medium uppercase tracking-wider text-zinc-400"
-          >
+          <label htmlFor={id} className="block text-xs font-medium text-zinc-700">
             {label}
           </label>
         )}
         <input
-          id={inputId}
+          id={id}
           type={type}
-          className={cn(
-            'flex h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900/70 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-colors focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50',
-            error && 'border-red-500/80 focus:border-red-500 focus:ring-red-500',
-            className
-          )}
+          className={`flex h-10 w-full rounded-lg border bg-white px-3 py-2 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:bg-zinc-50 disabled:text-zinc-400 ${
+            error
+              ? 'border-red-300 focus-visible:ring-red-500'
+              : 'border-zinc-200 hover:border-zinc-300 focus-visible:border-indigo-600'
+          } ${className}`}
           ref={ref}
           {...props}
         />
-        {error ? (
-          <p className="text-xs text-red-400">{error}</p>
-        ) : helperText ? (
-          <p className="text-xs text-zinc-500">{helperText}</p>
-        ) : null}
+        {helperText && (
+          <p className="text-[11px] text-zinc-500">{helperText}</p>
+        )}
       </div>
     );
   }
@@ -45,3 +37,4 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = 'Input';
 
 export { Input };
+

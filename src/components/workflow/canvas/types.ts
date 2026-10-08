@@ -15,6 +15,9 @@ export interface WorkflowNodeData extends Record<string, unknown> {
   onSelectNode?: (nodeId: string) => void;
   onDeleteNode?: (nodeId: string) => void;
   onDuplicateNode?: (nodeId: string) => void;
+  onOpenConfig?: (nodeId: string) => void;
+  hasValidationError?: boolean;
+  validationErrorMessage?: string;
 }
 
 export type ReactFlowWorkflowNode = Node<WorkflowNodeData>;

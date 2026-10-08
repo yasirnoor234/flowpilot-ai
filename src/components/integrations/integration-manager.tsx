@@ -15,20 +15,16 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog } from '@/components/ui/dialog';
 import {
   Mail,
   MessageSquare,
   Bot,
-  Webhook,
   CheckCircle2,
   AlertCircle,
   Clock,
   Send,
   Trash2,
-  RefreshCw,
-  Key,
-  ShieldCheck,
-  ExternalLink,
   Sliders,
   Check,
 } from 'lucide-react';
@@ -43,7 +39,6 @@ interface IntegrationManagerProps {
 export function IntegrationManager({
   connections,
   recentAttempts,
-  workspaceName,
   isDemoMode,
 }: IntegrationManagerProps) {
   const router = useRouter();
@@ -171,15 +166,15 @@ export function IntegrationManager({
         <div
           className={`p-3.5 rounded-xl text-xs flex items-center justify-between gap-2 ${
             feedback.type === 'success'
-              ? 'bg-emerald-950/30 border border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-950/30 border border-rose-500/30 text-rose-300'
+              ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
           }`}
         >
           <div className="flex items-center gap-2">
-            {feedback.type === 'success' ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
+            {feedback.type === 'success' ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <AlertCircle className="h-4 w-4 text-red-600" />}
             <span>{feedback.text}</span>
           </div>
-          <button onClick={() => setFeedback(null)} className="text-zinc-500 hover:text-zinc-300 text-xs">
+          <button onClick={() => setFeedback(null)} className="text-zinc-500 hover:text-zinc-700 text-xs font-medium">
             Dismiss
           </button>
         </div>
@@ -192,58 +187,58 @@ export function IntegrationManager({
           const conn = getConnection('resend');
           const isConnected = !!conn && conn.is_active;
           return (
-            <Card className="border-zinc-800 bg-zinc-900/50 flex flex-col justify-between shadow-lg">
+            <Card className="flex flex-col justify-between">
               <div>
                 <CardHeader className="flex flex-row items-start justify-between pb-2">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-purple-950/40 border border-purple-800/40 flex items-center justify-center text-purple-300 shadow-sm">
+                    <div className="h-10 w-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
                       <Mail className="h-5 w-5" />
                     </div>
                     <div>
-                      <CardTitle className="text-base text-white">Resend Email</CardTitle>
-                      <CardDescription className="text-xs">Transactional & AI response emails</CardDescription>
+                      <CardTitle className="text-base text-zinc-900">Resend Email</CardTitle>
+                      <CardDescription className="text-xs text-zinc-500">Transactional and follow-up emails</CardDescription>
                     </div>
                   </div>
-                  <Badge variant={isConnected ? 'success' : isDemoMode ? 'secondary' : 'outline'}>
-                    {isConnected ? 'Active & Live' : isDemoMode ? 'Demo Simulator' : 'Configuration Required'}
+                  <Badge variant={isConnected ? 'success' : isDemoMode ? 'secondary' : 'warning'}>
+                    {isConnected ? 'Connected' : isDemoMode ? 'Demo Simulator' : 'Not configured'}
                   </Badge>
                 </CardHeader>
                 <CardContent className="pt-2 space-y-3 text-xs">
-                  <p className="text-zinc-400 leading-relaxed">
-                    Sends automated follow-up emails, AI-drafted responses, and scheduling links directly to qualified leads.
+                  <p className="text-zinc-600 leading-relaxed">
+                    Sends automated follow-up emails, AI responses, and scheduling links directly to qualified leads.
                   </p>
 
-                  <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-3 space-y-1.5 font-mono text-[11px]">
-                    <div className="flex items-center justify-between text-zinc-300">
-                      <span className="text-zinc-500">Sender Address:</span>
-                      <span className="text-zinc-200 truncate">{conn?.settings?.from_email || 'onboarding@resend.dev'}</span>
+                  <div className="rounded-lg bg-zinc-50 border border-zinc-200 p-3 space-y-1.5 font-mono text-[11px]">
+                    <div className="flex items-center justify-between text-zinc-700">
+                      <span className="text-zinc-500 font-sans">Sender address:</span>
+                      <span className="text-zinc-900 font-medium truncate">{conn?.settings?.from_email || 'onboarding@resend.dev'}</span>
                     </div>
                     {conn?.masked_key && (
-                      <div className="flex items-center justify-between text-zinc-300">
-                        <span className="text-zinc-500">API Key:</span>
-                        <span className="text-purple-300">{conn.masked_key}</span>
+                      <div className="flex items-center justify-between text-zinc-700">
+                        <span className="text-zinc-500 font-sans">API key:</span>
+                        <span className="text-zinc-900">{conn.masked_key}</span>
                       </div>
                     )}
                     {conn?.last_tested_at && (
-                      <div className="flex items-center justify-between text-zinc-400 text-[10px]">
-                        <span className="text-zinc-500">Last Verified:</span>
-                        <span>{new Date(conn.last_tested_at).toLocaleString()}</span>
+                      <div className="flex items-center justify-between text-zinc-500 text-[10px]">
+                        <span className="text-zinc-500 font-sans">Last verified:</span>
+                        <span className="tabular-nums">{new Date(conn.last_tested_at).toLocaleString()}</span>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </div>
 
-              <div className="p-4 pt-0 border-t border-zinc-800/60 mt-4 flex items-center justify-between gap-2">
+              <div className="p-4 pt-0 border-t border-zinc-100 mt-4 flex items-center justify-between gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleTestDelivery('resend')}
                   disabled={isPending || testingProvider === 'resend'}
-                  className="text-xs h-8 gap-1.5 border-zinc-700 text-zinc-300"
+                  className="text-xs h-8 gap-1.5"
                 >
                   <Send className={`h-3 w-3 ${testingProvider === 'resend' ? 'animate-spin' : ''}`} />
-                  <span>{testingProvider === 'resend' ? 'Sending...' : 'Test Send Email'}</span>
+                  <span>{testingProvider === 'resend' ? 'Sending...' : 'Test email'}</span>
                 </Button>
 
                 <div className="flex items-center gap-2">
@@ -252,7 +247,7 @@ export function IntegrationManager({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDisconnect('resend')}
-                      className="text-xs h-8 px-2 text-rose-400 hover:text-rose-300"
+                      className="text-xs h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -264,7 +259,7 @@ export function IntegrationManager({
                     className="text-xs h-8 gap-1"
                   >
                     <Sliders className="h-3 w-3" />
-                    <span>{isConnected ? 'Edit Credentials' : 'Configure Resend'}</span>
+                    <span>{isConnected ? 'Edit credentials' : 'Configure Resend'}</span>
                   </Button>
                 </div>
               </div>
@@ -277,58 +272,58 @@ export function IntegrationManager({
           const conn = getConnection('slack');
           const isConnected = !!conn && conn.is_active;
           return (
-            <Card className="border-zinc-800 bg-zinc-900/50 flex flex-col justify-between shadow-lg">
+            <Card className="flex flex-col justify-between">
               <div>
                 <CardHeader className="flex flex-row items-start justify-between pb-2">
                   <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl bg-amber-950/40 border border-amber-800/40 flex items-center justify-center text-amber-300 shadow-sm">
+                    <div className="h-10 w-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
                       <MessageSquare className="h-5 w-5" />
                     </div>
                     <div>
-                      <CardTitle className="text-base text-white">Slack Incoming Webhook</CardTitle>
-                      <CardDescription className="text-xs">Team notification cards & lead alerts</CardDescription>
+                      <CardTitle className="text-base text-zinc-900">Slack Notifications</CardTitle>
+                      <CardDescription className="text-xs text-zinc-500">Team notifications and lead alerts</CardDescription>
                     </div>
                   </div>
-                  <Badge variant={isConnected ? 'success' : isDemoMode ? 'secondary' : 'outline'}>
-                    {isConnected ? 'Active & Live' : isDemoMode ? 'Demo Simulator' : 'Configuration Required'}
+                  <Badge variant={isConnected ? 'success' : isDemoMode ? 'secondary' : 'warning'}>
+                    {isConnected ? 'Connected' : isDemoMode ? 'Demo Simulator' : 'Not configured'}
                   </Badge>
                 </CardHeader>
                 <CardContent className="pt-2 space-y-3 text-xs">
-                  <p className="text-zinc-400 leading-relaxed">
-                    Posts rich alert cards with lead qualification badges, budget summaries, and one-click lead detail links into Slack.
+                  <p className="text-zinc-600 leading-relaxed">
+                    Posts lead notifications, qualification scores, and CRM links directly into your team Slack channels.
                   </p>
 
-                  <div className="rounded-xl bg-zinc-950/70 border border-zinc-800/80 p-3 space-y-1.5 font-mono text-[11px]">
-                    <div className="flex items-center justify-between text-zinc-300">
-                      <span className="text-zinc-500">Channel Target:</span>
-                      <span className="text-zinc-200">{conn?.settings?.channel || '#leads-notifications'}</span>
+                  <div className="rounded-lg bg-zinc-50 border border-zinc-200 p-3 space-y-1.5 font-mono text-[11px]">
+                    <div className="flex items-center justify-between text-zinc-700">
+                      <span className="text-zinc-500 font-sans">Channel target:</span>
+                      <span className="text-zinc-900 font-medium">{conn?.settings?.channel || '#leads-notifications'}</span>
                     </div>
                     {conn?.masked_key && (
-                      <div className="flex items-center justify-between text-zinc-300">
-                        <span className="text-zinc-500">Webhook URL:</span>
-                        <span className="text-amber-300">hooks.slack.com/...{conn.masked_key.slice(-6)}</span>
+                      <div className="flex items-center justify-between text-zinc-700">
+                        <span className="text-zinc-500 font-sans">Webhook URL:</span>
+                        <span className="text-zinc-900">hooks.slack.com/...{conn.masked_key.slice(-6)}</span>
                       </div>
                     )}
                     {conn?.last_tested_at && (
-                      <div className="flex items-center justify-between text-zinc-400 text-[10px]">
-                        <span className="text-zinc-500">Last Verified:</span>
-                        <span>{new Date(conn.last_tested_at).toLocaleString()}</span>
+                      <div className="flex items-center justify-between text-zinc-500 text-[10px]">
+                        <span className="text-zinc-500 font-sans">Last verified:</span>
+                        <span className="tabular-nums">{new Date(conn.last_tested_at).toLocaleString()}</span>
                       </div>
                     )}
                   </div>
                 </CardContent>
               </div>
 
-              <div className="p-4 pt-0 border-t border-zinc-800/60 mt-4 flex items-center justify-between gap-2">
+              <div className="p-4 pt-0 border-t border-zinc-100 mt-4 flex items-center justify-between gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleTestDelivery('slack')}
                   disabled={isPending || testingProvider === 'slack'}
-                  className="text-xs h-8 gap-1.5 border-zinc-700 text-zinc-300"
+                  className="text-xs h-8 gap-1.5"
                 >
                   <Send className={`h-3 w-3 ${testingProvider === 'slack' ? 'animate-spin' : ''}`} />
-                  <span>{testingProvider === 'slack' ? 'Posting...' : 'Send Test Slack Alert'}</span>
+                  <span>{testingProvider === 'slack' ? 'Posting...' : 'Test Slack alert'}</span>
                 </Button>
 
                 <div className="flex items-center gap-2">
@@ -337,7 +332,7 @@ export function IntegrationManager({
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDisconnect('slack')}
-                      className="text-xs h-8 px-2 text-rose-400 hover:text-rose-300"
+                      className="text-xs h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -349,7 +344,7 @@ export function IntegrationManager({
                     className="text-xs h-8 gap-1"
                   >
                     <Sliders className="h-3 w-3" />
-                    <span>{isConnected ? 'Edit Webhook' : 'Configure Slack'}</span>
+                    <span>{isConnected ? 'Edit webhook' : 'Configure Slack'}</span>
                   </Button>
                 </div>
               </div>
@@ -361,174 +356,154 @@ export function IntegrationManager({
       {/* Test Execution Diagnostic Toast / Banner */}
       {testResult && (
         <div
-          className={`p-4 rounded-2xl border text-xs space-y-1.5 shadow-lg ${
+          className={`p-4 rounded-xl border text-xs space-y-1 ${
             testResult.success
-              ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-950/20 border-rose-500/30 text-rose-300'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-red-50 border-red-200 text-red-900'
           }`}
         >
-          <div className="flex items-center justify-between font-bold">
+          <div className="flex items-center justify-between font-semibold">
             <span className="flex items-center gap-1.5">
-              {testResult.success ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-              <span>{testResult.success ? 'Delivery Verification Succeeded' : 'Delivery Verification Failed'}</span>
+              {testResult.success ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <AlertCircle className="h-4 w-4 text-red-600" />}
+              <span>{testResult.success ? 'Delivery verification succeeded' : 'Delivery verification failed'}</span>
             </span>
-            <button onClick={() => setTestResult(null)} className="text-[11px] underline">
+            <button onClick={() => setTestResult(null)} className="text-[11px] underline text-zinc-600 hover:text-zinc-900">
               Close
             </button>
           </div>
-          <p className="text-zinc-200 font-mono text-[11px]">{testResult.message}</p>
+          <p className="text-zinc-700 font-mono text-[11px]">{testResult.message}</p>
         </div>
       )}
 
-      {/* Modal / Drawer for configuring credentials */}
-      {activeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Key className="h-4 w-4 text-purple-400" />
-                  <span>Configure {activeModal === 'resend' ? 'Resend API' : 'Slack Webhook'}</span>
-                </h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  Credentials are encrypted server-side with AES-256-GCM and never exposed to client browsers.
-                </p>
+      {/* Modal for configuring credentials */}
+      <Dialog
+        isOpen={!!activeModal}
+        onClose={() => setActiveModal(null)}
+        title={`Configure ${activeModal === 'resend' ? 'Resend API' : 'Slack Webhook'}`}
+        description="Credentials are encrypted server-side with AES-256-GCM and never exposed to client browsers."
+      >
+        <form onSubmit={handleSaveConnection} className="space-y-4 text-xs">
+          {activeModal === 'resend' && (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">Resend API key (re_...)</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="re_1234567890abcdef..."
+                  value={secretKeyInput}
+                  onChange={(e) => setSecretKeyInput(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 font-mono text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
               </div>
-              <button
-                onClick={() => setActiveModal(null)}
-                className="text-zinc-400 hover:text-white text-xs font-semibold p-1"
-              >
-                ✕
-              </button>
-            </div>
 
-            <form onSubmit={handleSaveConnection} className="space-y-4 text-xs">
-              {activeModal === 'resend' && (
-                <>
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-300 font-medium">Resend API Key (re_...)</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="re_1234567890abcdef..."
-                      value={secretKeyInput}
-                      onChange={(e) => setSecretKeyInput(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 font-mono text-xs focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-300 font-medium">Verified From Address</label>
-                    <input
-                      type="text"
-                      value={fromEmailInput}
-                      onChange={(e) => setFromEmailInput(e.target.value)}
-                      placeholder="FlowPilot AI <onboarding@resend.dev>"
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 text-xs focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-300 font-medium">Demo/Testing Recipient (Optional)</label>
-                    <input
-                      type="email"
-                      value={testRecipientInput}
-                      onChange={(e) => setTestRecipientInput(e.target.value)}
-                      placeholder="test-inbox@yourcompany.com"
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 text-xs focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              {activeModal === 'slack' && (
-                <>
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-300 font-medium">Incoming Webhook URL</label>
-                    <input
-                      type="password"
-                      required
-                      placeholder="https://hooks.slack.com/services/T00/B00/XXXX"
-                      value={secretKeyInput}
-                      onChange={(e) => setSecretKeyInput(e.target.value)}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 font-mono text-xs focus:outline-none focus:border-purple-500"
-                    />
-                    <span className="text-[10px] text-zinc-500 block">Must strictly begin with https://hooks.slack.com/services/</span>
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <label className="text-zinc-300 font-medium">Slack Channel Name</label>
-                    <input
-                      type="text"
-                      value={slackChannelInput}
-                      onChange={(e) => setSlackChannelInput(e.target.value)}
-                      placeholder="#leads-notifications"
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-zinc-200 text-xs focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-800">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setActiveModal(null)}
-                  className="text-xs"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isPending || !secretKeyInput.trim()}
-                  className="text-xs bg-purple-600 hover:bg-purple-500"
-                >
-                  <span>{isPending ? 'Encrypting & Saving...' : 'Save & Encrypt'}</span>
-                </Button>
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">Verified from address</label>
+                <input
+                  type="text"
+                  value={fromEmailInput}
+                  onChange={(e) => setFromEmailInput(e.target.value)}
+                  placeholder="FlowPilot AI <onboarding@resend.dev>"
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
               </div>
-            </form>
+
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">Test recipient (optional)</label>
+                <input
+                  type="email"
+                  value={testRecipientInput}
+                  onChange={(e) => setTestRecipientInput(e.target.value)}
+                  placeholder="test-inbox@yourcompany.com"
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </>
+          )}
+
+          {activeModal === 'slack' && (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">Incoming webhook URL</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="https://hooks.slack.com/services/T00/B00/XXXX"
+                  value={secretKeyInput}
+                  onChange={(e) => setSecretKeyInput(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 font-mono text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+                <span className="text-[11px] text-zinc-500 block">Must begin with https://hooks.slack.com/services/</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">Slack channel name</label>
+                <input
+                  type="text"
+                  value={slackChannelInput}
+                  onChange={(e) => setSlackChannelInput(e.target.value)}
+                  placeholder="#leads-notifications"
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </>
+          )}
+
+          <div className="flex items-center justify-end gap-2 pt-3 border-t border-zinc-100">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setActiveModal(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isPending || !secretKeyInput.trim()}
+            >
+              <span>{isPending ? 'Saving...' : 'Save and encrypt'}</span>
+            </Button>
           </div>
-        </div>
-      )}
+        </form>
+      </Dialog>
 
       {/* Action Attempts Audit Log */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Clock className="h-4 w-4 text-purple-400" />
-            <span>Recent Integration Action Logs ({recentAttempts.length})</span>
+          <h3 className="text-sm font-semibold text-zinc-900 flex items-center gap-2">
+            <Clock className="h-4 w-4 text-zinc-500" />
+            <span>Recent integration activity ({recentAttempts.length})</span>
           </h3>
-          <span className="text-[11px] text-zinc-500 font-mono">Durable Execution Audit Trail</span>
         </div>
 
-        <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden shadow-xl">
-          <table className="w-full text-left text-xs text-zinc-300">
-            <thead className="border-b border-zinc-800 bg-zinc-950/70 text-zinc-400 font-medium">
+        <div className="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-sm">
+          <table className="w-full text-left text-xs text-zinc-700">
+            <thead className="border-b border-zinc-200 bg-zinc-50 text-zinc-500 font-medium">
               <tr>
-                <th className="px-4 py-3">Action Type</th>
-                <th className="px-4 py-3">Target / Recipient</th>
+                <th className="px-4 py-3">Action type</th>
+                <th className="px-4 py-3">Target / recipient</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Message ID</th>
                 <th className="px-4 py-3">Latency</th>
                 <th className="px-4 py-3 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-800/60">
+            <tbody className="divide-y divide-zinc-100">
               {recentAttempts.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-zinc-500">
-                    No integration actions executed yet. Trigger a workflow test or test send above.
+                    No integration actions recorded yet.
                   </td>
                 </tr>
               ) : (
                 recentAttempts.map((attempt) => (
-                  <tr key={attempt.id} className="hover:bg-zinc-800/40 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-zinc-200">
-                      <span className="capitalize">{attempt.action_type.replace('_', ' ')}</span>
+                  <tr key={attempt.id} className="hover:bg-zinc-50/60 transition-colors">
+                    <td className="px-4 py-3 font-medium text-zinc-900">
+                      <span className="capitalize">{attempt.action_type.replace(/_/g, ' ')}</span>
                     </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-300">
+                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-600">
                       {attempt.recipient_or_target || '—'}
                     </td>
                     <td className="px-4 py-3">
@@ -538,19 +513,19 @@ export function IntegrationManager({
                             ? 'success'
                             : attempt.status === 'simulated'
                             ? 'secondary'
-                            : 'danger'
+                            : 'destructive'
                         }
                       >
                         {attempt.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 font-mono text-[10px] text-zinc-400 truncate max-w-[140px]">
+                    <td className="px-4 py-3 font-mono text-[10px] text-zinc-500 truncate max-w-[140px]">
                       {attempt.provider_message_id || '—'}
                     </td>
-                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-400">
+                    <td className="px-4 py-3 font-mono text-[11px] text-zinc-500 tabular-nums">
                       {attempt.latency_ms !== null ? `${attempt.latency_ms}ms` : '—'}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-[11px] text-zinc-400">
+                    <td className="px-4 py-3 text-right font-mono text-[11px] text-zinc-500 tabular-nums">
                       {new Date(attempt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </td>
                   </tr>
@@ -563,3 +538,4 @@ export function IntegrationManager({
     </div>
   );
 }
+

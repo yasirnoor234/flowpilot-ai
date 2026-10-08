@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Sparkles, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, CheckCircle2 } from 'lucide-react';
 import { resetDemoWorkspaceData } from '@/lib/actions/demo';
 
 interface SandboxBannerProps {
@@ -23,35 +23,28 @@ export function SandboxBanner({ workspaceId, isDemoMode }: SandboxBannerProps) {
       setMessage(null);
       const res = await resetDemoWorkspaceData(workspaceId);
       if (res.success) {
-        setMessage('Demo leads reset successfully!');
-        setTimeout(() => setMessage(null), 4000);
+        setMessage('Demo data refreshed');
+        setTimeout(() => setMessage(null), 3000);
       } else {
         setMessage(`Reset failed: ${res.error}`);
       }
     } catch {
-      setMessage('Failed to reset demo data.');
+      setMessage('Failed to reset demo data');
     } finally {
       setIsResetting(false);
     }
   };
 
   return (
-    <div className="bg-amber-950/40 border-b border-amber-800/60 px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
-      <div className="flex items-center gap-2.5 text-amber-200">
-        <div className="p-1 rounded bg-amber-500/20 text-amber-400">
-          <Sparkles className="h-3.5 w-3.5" />
-        </div>
-        <div>
-          <span className="font-semibold text-amber-100">Sandbox Demo Mode Active:</span>
-          <span className="ml-1.5 text-amber-300/80">
-            Outbound emails and Slack notifications use safe mock adapters. Real workspace data is strictly isolated.
-          </span>
-        </div>
+    <div className="bg-amber-50 border-b border-amber-200/80 px-6 sm:px-8 py-2 flex items-center justify-between gap-3 text-xs text-amber-900">
+      <div className="flex items-center gap-2">
+        <span className="flex h-2 w-2 rounded-full bg-amber-500" />
+        <span className="font-medium">Demo mode — actions use sample integrations.</span>
       </div>
 
       <div className="flex items-center gap-3">
         {message && (
-          <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
+          <span className="text-xs text-emerald-700 font-medium flex items-center gap-1">
             <CheckCircle2 className="h-3.5 w-3.5" />
             {message}
           </span>
@@ -59,11 +52,10 @@ export function SandboxBanner({ workspaceId, isDemoMode }: SandboxBannerProps) {
         <button
           onClick={handleReset}
           disabled={isResetting}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-amber-900/60 hover:bg-amber-800/80 border border-amber-700/60 text-amber-200 text-xs font-medium transition-colors disabled:opacity-50"
-          title="Refresh synthetic sample leads and clear temporary demo runs"
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white border border-amber-300 hover:bg-amber-100/60 text-amber-900 text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
         >
           <RefreshCw className={`h-3 w-3 ${isResetting ? 'animate-spin' : ''}`} />
-          <span>{isResetting ? 'Resetting...' : 'Reset Demo Data'}</span>
+          <span>{isResetting ? 'Resetting...' : 'Reset demo data'}</span>
         </button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { getWorkspaceIntegrationsAction } from '@/lib/actions/integrations';
 import { WebhookTester } from '@/components/integrations/webhook-tester';
 import { IntegrationManager } from '@/components/integrations/integration-manager';
+import { PageHeader } from '@/components/ui/page-header';
 import type { WebhookEndpointRecord } from '@/types/crm';
 import crypto from 'crypto';
 
@@ -60,13 +61,10 @@ export default async function IntegrationsPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <h2 className="text-xl font-bold text-white tracking-tight">Integrations & Connectors</h2>
-        <p className="text-xs text-zinc-400 mt-0.5">
-          Manage live API keys, encrypted secrets, and inbound webhook endpoints for{' '}
-          <span className="text-zinc-200 font-medium">{context.workspace.name}</span>.
-        </p>
-      </div>
+      <PageHeader
+        title="Integrations"
+        description={`Manage live API keys, encrypted credentials, and inbound webhook endpoints for ${context.workspace.name}.`}
+      />
 
       {/* Resend Email & Slack Live Integrations */}
       <IntegrationManager
@@ -77,10 +75,10 @@ export default async function IntegrationsPage() {
       />
 
       {/* Webhook Endpoint Tester */}
-      <div className="space-y-4 pt-4 border-t border-zinc-800">
+      <div className="space-y-4 pt-6 border-t border-zinc-200">
         <div>
-          <h3 className="text-sm font-bold text-white">Inbound Lead Capture Webhooks</h3>
-          <p className="text-xs text-zinc-400">
+          <h2 className="text-base font-semibold text-zinc-900">Inbound lead capture webhooks</h2>
+          <p className="text-xs text-zinc-500 mt-0.5">
             Accept lead submissions directly into your workflows from external landing pages, Webflow, or Typeform.
           </p>
         </div>
@@ -94,3 +92,4 @@ export default async function IntegrationsPage() {
     </div>
   );
 }
+

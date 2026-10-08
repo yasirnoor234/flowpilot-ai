@@ -16,8 +16,8 @@ export default async function DashboardLayout({
   const allWorkspaces = await getUserWorkspaces(context.user.id);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex">
-      {/* Sidebar Navigation */}
+    <div className="min-h-screen bg-[#FAFAF8] text-zinc-900 flex">
+      {/* Sidebar Navigation (240px) */}
       <Sidebar
         currentWorkspace={context.workspace}
         userRole={context.role}
@@ -35,7 +35,7 @@ export default async function DashboardLayout({
           workspaceName={context.workspace.name}
           isDemoMode={context.workspace.is_demo_mode}
         />
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
           {children}
         </main>
       </div>

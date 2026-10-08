@@ -51,33 +51,29 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
   const getNodeTheme = (type: string) => {
     if (type.startsWith('trigger_')) {
       return {
-        badge: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-        iconBg: 'bg-purple-500/20 text-purple-400 border-purple-500/40',
-        cardBorder: 'hover:border-purple-500/60',
-        selectedBorder: 'border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.25)]',
+        badge: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
+        iconBg: 'bg-indigo-50 text-indigo-600',
+        selectedBorder: 'ring-2 ring-indigo-600 border-transparent',
       };
     }
     if (type === 'action_ai_qualify') {
       return {
-        badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
-        iconBg: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40',
-        cardBorder: 'hover:border-indigo-500/60',
-        selectedBorder: 'border-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.25)]',
+        badge: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
+        iconBg: 'bg-indigo-50 text-indigo-600',
+        selectedBorder: 'ring-2 ring-indigo-600 border-transparent',
       };
     }
     if (type === 'action_crm_upsert' || type === 'action_send_email' || type === 'action_slack_notify') {
       return {
-        badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-        iconBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40',
-        cardBorder: 'hover:border-emerald-500/60',
-        selectedBorder: 'border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.25)]',
+        badge: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+        iconBg: 'bg-zinc-100 text-zinc-700',
+        selectedBorder: 'ring-2 ring-indigo-600 border-transparent',
       };
     }
     return {
-      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-      iconBg: 'bg-blue-500/20 text-blue-400 border-blue-500/40',
-      cardBorder: 'hover:border-blue-500/60',
-      selectedBorder: 'border-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.25)]',
+      badge: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+      iconBg: 'bg-zinc-100 text-zinc-700',
+      selectedBorder: 'ring-2 ring-indigo-600 border-transparent',
     };
   };
 
@@ -103,50 +99,64 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
     }
   };
 
-  const Icon = getNodeIcon(nodeData.type);
+  const IconComponent = getNodeIcon(nodeData.type);
   const theme = getNodeTheme(nodeData.type);
 
   return (
     <div
-      className={`relative min-w-[260px] max-w-[320px] rounded-xl border bg-zinc-900/90 backdrop-blur-md p-3.5 text-xs text-zinc-200 transition-all duration-150 ${
-        selected ? theme.selectedBorder : `border-zinc-800 ${theme.cardBorder}`
-      }`}
+      className={`w-64 rounded-xl border bg-white p-3.5 shadow-xs transition-all duration-150 ${
+        selected
+          ? theme.selectedBorder
+          : 'border-zinc-200 hover:border-zinc-300'
+      } ${nodeData.hasValidationError ? 'border-red-400 bg-red-50/20' : ''}`}
     >
-      {/* Target Handle (Incoming Connection) - Not shown for Triggers */}
+      {/* Target Connection Handle (Top) */}
       {!isTrigger && (
         <Handle
           type="target"
           position={Position.Top}
-          className="!h-3 !w-3 !rounded-full !border-2 !border-zinc-900 !bg-zinc-400 hover:!bg-indigo-400 transition-colors"
+          className="!h-3 !w-3 !rounded-full !bg-zinc-300 !border-2 !border-white hover:!bg-indigo-600 transition-colors"
         />
       )}
 
-      {/* Header */}
-      <div className="flex items-start justify-between gap-2.5">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${theme.iconBg}`}>
-            <Icon className="h-4 w-4" />
+      {/* Node Header */}
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className={`h-7 w-7 rounded-lg flex items-center justify-center shrink-0 ${theme.iconBg}`}>
+            <IconComponent className="h-3.5 w-3.5" />
           </div>
-          <div className="min-w-0 flex-1">
-            <h4 className="font-semibold text-white tracking-tight truncate text-xs">
+          <div className="min-w-0">
+            <h4 className="text-xs font-semibold text-zinc-900 truncate">
               {nodeData.title}
             </h4>
-            <span className="text-[10px] font-mono text-zinc-400 block truncate">
-              {nodeData.type}
-            </span>
+            <div className="text-[10px] text-zinc-400 uppercase tracking-wider font-mono">
+              {nodeData.type.replace('action_', '').replace('trigger_', '')}
+            </div>
           </div>
         </div>
 
-        {/* Action Controls on Hover/Select */}
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Action Controls */}
+        <div className="flex items-center gap-0.5 shrink-0 opacity-80 hover:opacity-100">
+          {nodeData.onOpenConfig && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nodeData.onOpenConfig?.(nodeData.nodeId);
+              }}
+              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              title="Configure Node"
+            >
+              <Settings className="h-3 w-3" />
+            </button>
+          )}
           {nodeData.onDuplicateNode && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 nodeData.onDuplicateNode?.(nodeData.nodeId);
               }}
-              title="Duplicate node"
-              className="p-1 rounded text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors"
+              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              title="Duplicate"
             >
               <Copy className="h-3 w-3" />
             </button>
@@ -157,8 +167,8 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
                 e.stopPropagation();
                 nodeData.onDeleteNode?.(nodeData.nodeId);
               }}
-              title="Delete node"
-              className="p-1 rounded text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              className="p-1 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50"
+              title="Delete"
             >
               <Trash2 className="h-3 w-3" />
             </button>
@@ -166,55 +176,49 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
         </div>
       </div>
 
-      {/* Summary Snippet */}
-      <div className="mt-2.5 pt-2 border-t border-zinc-800/80 flex items-center justify-between gap-2 text-[11px] text-zinc-400 font-mono">
-        <span className="truncate">{getConfigSummary()}</span>
-        <span className="text-[10px] text-zinc-600 font-sans shrink-0">
-          #{nodeData.nodeId.slice(-4)}
-        </span>
+      {/* Config Summary Card */}
+      <div className="rounded-lg bg-zinc-50 border border-zinc-200/60 px-2.5 py-1.5 text-[11px] font-mono text-zinc-600 truncate">
+        {getConfigSummary()}
       </div>
 
-      {/* Error State Badge */}
-      {nodeData.hasErrors && (
-        <div className="mt-2 flex items-center gap-1.5 p-1.5 rounded-md bg-red-950/40 border border-red-800/50 text-[10px] text-red-300">
-          <AlertTriangle className="h-3 w-3 shrink-0 text-red-400" />
-          <span className="truncate">{nodeData.errorMessages?.[0] || 'Invalid configuration'}</span>
-        </div>
-      )}
-
-      {/* Live Execution Status Overlay Badge during Test Runs */}
+      {/* Live Test Run Execution Status Badge */}
       {nodeData.executionStatus && (
-        <div className="mt-2 pt-1.5 border-t border-zinc-800/60 flex items-center justify-between text-[10px]">
-          <span className="text-zinc-500 font-medium">Test Run:</span>
-          {nodeData.executionStatus === 'succeeded' && (
-            <span className="inline-flex items-center gap-1 font-semibold text-emerald-400">
-              <CheckCircle2 className="h-3 w-3" /> Succeeded
-              {nodeData.executionDurationMs ? ` (${nodeData.executionDurationMs}ms)` : ''}
+        <div className="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between text-[11px]">
+          <div className="flex items-center gap-1.5">
+            {nodeData.executionStatus === 'succeeded' && (
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+            )}
+            {nodeData.executionStatus === 'running' && (
+              <div className="h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
+            )}
+            {nodeData.executionStatus === 'failed' && (
+              <XCircle className="h-3.5 w-3.5 text-red-600" />
+            )}
+            <span className="font-medium capitalize text-zinc-700">
+              {nodeData.executionStatus}
             </span>
-          )}
-          {nodeData.executionStatus === 'running' && (
-            <span className="inline-flex items-center gap-1 font-semibold text-blue-400 animate-pulse">
-              <Activity className="h-3 w-3 animate-spin" /> Running
-            </span>
-          )}
-          {nodeData.executionStatus === 'failed' && (
-            <span className="inline-flex items-center gap-1 font-semibold text-red-400">
-              <XCircle className="h-3 w-3" /> Failed
-            </span>
-          )}
-          {nodeData.executionStatus === 'skipped' && (
-            <span className="inline-flex items-center gap-1 font-medium text-zinc-500">
-              Skipped
+          </div>
+          {nodeData.executionDurationMs !== undefined && (
+            <span className="text-zinc-400 tabular-nums">
+              {nodeData.executionDurationMs}ms
             </span>
           )}
         </div>
       )}
 
-      {/* Source Handle (Outgoing Connection) */}
+      {/* Validation Warning */}
+      {nodeData.hasValidationError && (
+        <div className="mt-2 flex items-center gap-1 text-[10px] text-red-600 font-medium">
+          <AlertTriangle className="h-3 w-3 shrink-0" />
+          <span className="truncate">{nodeData.validationErrorMessage || 'Invalid Configuration'}</span>
+        </div>
+      )}
+
+      {/* Source Connection Handle (Bottom) */}
       <Handle
         type="source"
         position={Position.Bottom}
-        className="!h-3 !w-3 !rounded-full !border-2 !border-zinc-900 !bg-zinc-400 hover:!bg-indigo-400 transition-colors"
+        className="!h-3 !w-3 !rounded-full !bg-zinc-300 !border-2 !border-white hover:!bg-indigo-600 transition-colors"
       />
     </div>
   );

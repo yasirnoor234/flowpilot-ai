@@ -2,6 +2,7 @@ import React from 'react';
 import { requireWorkspaceAuth } from '@/lib/auth/workspace-context';
 import { createClient } from '@/lib/supabase/server';
 import { SettingsForm } from '@/components/dashboard/settings-form';
+import { PageHeader } from '@/components/ui/page-header';
 import type { WorkspaceMember, Profile, WorkspaceRole } from '@/types/database';
 
 interface MemberDbRow {
@@ -52,13 +53,11 @@ export default async function SettingsPage() {
   }));
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-white tracking-tight">Workspace Settings</h2>
-        <p className="text-xs text-zinc-400">
-          Configure {context.workspace.name} details, team permissions, and security.
-        </p>
-      </div>
+    <div className="space-y-8">
+      <PageHeader
+        title="Settings"
+        description={`Configure ${context.workspace.name} details, team permissions, and workspace preferences.`}
+      />
 
       <SettingsForm
         workspace={context.workspace}
@@ -69,3 +68,4 @@ export default async function SettingsPage() {
     </div>
   );
 }
+

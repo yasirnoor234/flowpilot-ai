@@ -34,18 +34,18 @@ export default function LoginPage() {
   }
 
   return (
-    <Card className="border-zinc-800 bg-zinc-900/70 shadow-2xl backdrop-blur-xl">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-white">Welcome back</CardTitle>
-        <CardDescription>
-          Enter your credentials to access your automation workspace.
+        <CardTitle className="text-xl font-bold text-zinc-900">Sign in</CardTitle>
+        <CardDescription className="text-xs text-zinc-500">
+          Enter your credentials to access your workspace.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400">
-              <AlertCircle className="h-4 w-4 shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-800">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
               <span>{error}</span>
             </div>
           )}
@@ -55,7 +55,7 @@ export default function LoginPage() {
               id="email"
               name="email"
               type="email"
-              label="Work Email"
+              label="Work email"
               placeholder="name@company.com"
               required
               autoComplete="email"
@@ -66,13 +66,13 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <label
                 htmlFor="password"
-                className="block text-xs font-medium uppercase tracking-wider text-zinc-400"
+                className="block text-xs font-medium text-zinc-700"
               >
                 Password
               </label>
               <Link
                 href="/forgot-password"
-                className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
+                className="text-xs text-indigo-600 hover:text-indigo-700 transition-colors"
               >
                 Forgot password?
               </Link>
@@ -88,17 +88,18 @@ export default function LoginPage() {
           </div>
 
           <Button type="submit" className="w-full mt-2" isLoading={loading}>
-            <span>Sign In to Workspace</span>
+            <span>Sign in to workspace</span>
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-center text-xs text-zinc-400">
+      <CardFooter className="flex justify-center text-xs text-zinc-500">
         Don&apos;t have an account?{' '}
-        <Link href="/signup" className="ml-1 font-medium text-indigo-400 hover:text-indigo-300">
+        <Link href="/signup" className="ml-1 font-medium text-indigo-600 hover:text-indigo-700">
           Sign up
         </Link>
       </CardFooter>
     </Card>
   );
 }
+

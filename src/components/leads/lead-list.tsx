@@ -1,25 +1,21 @@
 'use client';
 
-import React, { useState, useTransition } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { LeadRecord, LeadStatus, QualificationStatus } from '@/types/crm';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import {
   Users,
   Search,
-  Filter,
-  Sparkles,
-  ArrowUpRight,
-  Flame,
-  SunMedium,
-  Snowflake,
   ChevronLeft,
   ChevronRight,
-  Mail,
-  Building,
-  Calendar,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
 interface LeadListProps {
@@ -35,7 +31,7 @@ export function LeadList({
   totalCount,
   currentPage,
   totalPages,
-  workspaceId,
+  workspaceId: _workspaceId,
 }: LeadListProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,32 +56,29 @@ export function LeadList({
     switch (status) {
       case 'hot':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">
-            <Flame className="h-3 w-3" />
-            <span>HOT {score !== null ? `(${score})` : ''}</span>
-          </span>
+          <Badge variant="success" size="sm">
+            HOT {score !== null ? `(${score})` : ''}
+          </Badge>
         );
       case 'warm':
       case 'qualified':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
-            <SunMedium className="h-3 w-3" />
-            <span>WARM {score !== null ? `(${score})` : ''}</span>
-          </span>
+          <Badge variant="primary" size="sm">
+            WARM {score !== null ? `(${score})` : ''}
+          </Badge>
         );
       case 'cold':
       case 'unqualified':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30">
-            <Snowflake className="h-3 w-3" />
-            <span>COLD {score !== null ? `(${score})` : ''}</span>
-          </span>
+          <Badge variant="secondary" size="sm">
+            COLD {score !== null ? `(${score})` : ''}
+          </Badge>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-zinc-800 text-zinc-400 border border-zinc-700/60">
-            <span>Pending</span>
-          </span>
+          <Badge variant="muted" size="sm">
+            Pending
+          </Badge>
         );
     }
   };
@@ -93,152 +86,165 @@ export function LeadList({
   const getStatusBadge = (status: LeadStatus) => {
     switch (status) {
       case 'new':
-        return <Badge variant="default">New</Badge>;
+        return <Badge variant="primary" size="sm">New</Badge>;
       case 'contacted':
-        return <Badge variant="outline" className="text-purple-400 border-purple-500/30">Contacted</Badge>;
+        return <Badge variant="secondary" size="sm">Contacted</Badge>;
       case 'qualified':
-        return <Badge variant="success">Qualified</Badge>;
+        return <Badge variant="success" size="sm">Qualified</Badge>;
       case 'converted':
-        return <Badge variant="success" className="bg-emerald-500/20 text-emerald-300">Converted</Badge>;
+        return <Badge variant="success" size="sm">Converted</Badge>;
       case 'unqualified':
       case 'lost':
-        return <Badge variant="secondary">Lost</Badge>;
+        return <Badge variant="destructive" size="sm">{status}</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="muted" size="sm">{status}</Badge>;
     }
   };
 
   return (
-    <div className="space-y-4">
-      {/* Search & Filter Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-900/60 p-3 rounded-2xl border border-zinc-800">
-        <div className="flex items-center gap-2 flex-1 min-w-[240px] max-w-md">
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Search leads by name, email, or company..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:border-purple-500"
-            />
-          </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <PageHeader
+        title="Leads"
+        description="Manage captured leads, qualification scores, and CRM activity logs."
+      />
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+          <input
+            type="text"
+            placeholder="Search leads by name, email, company..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 h-10 rounded-lg border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 shadow-xs"
+          />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Status Filter */}
-          <div className="flex items-center gap-1 text-xs">
-            <Filter className="h-3.5 w-3.5 text-zinc-400" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="rounded-lg bg-zinc-950 border border-zinc-800 px-2.5 py-1 text-xs text-zinc-300 focus:outline-none focus:border-purple-500"
-            >
-              <option value="all">All Statuses</option>
-              <option value="new">New</option>
-              <option value="contacted">Contacted</option>
-              <option value="qualified">Qualified</option>
-              <option value="converted">Converted</option>
-              <option value="lost">Lost</option>
-            </select>
-          </div>
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 shadow-xs"
+          >
+            <option value="all">All Statuses</option>
+            <option value="new">New</option>
+            <option value="contacted">Contacted</option>
+            <option value="qualified">Qualified</option>
+            <option value="converted">Converted</option>
+            <option value="lost">Lost</option>
+          </select>
 
-          {/* AI Tier Filter */}
-          <div className="flex items-center gap-1 text-xs">
-            <Sparkles className="h-3.5 w-3.5 text-purple-400" />
-            <select
-              value={tierFilter}
-              onChange={(e) => setTierFilter(e.target.value)}
-              className="rounded-lg bg-zinc-950 border border-zinc-800 px-2.5 py-1 text-xs text-zinc-300 focus:outline-none focus:border-purple-500"
-            >
-              <option value="all">All AI Tiers</option>
-              <option value="hot">Hot Leads</option>
-              <option value="warm">Warm Leads</option>
-              <option value="cold">Cold Leads</option>
-              <option value="pending">Pending</option>
-            </select>
-          </div>
+          <select
+            value={tierFilter}
+            onChange={(e) => setTierFilter(e.target.value)}
+            className="h-9 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 focus:outline-none focus:ring-1 focus:ring-indigo-600 shadow-xs"
+          >
+            <option value="all">All AI Tiers</option>
+            <option value="hot">Hot Tier</option>
+            <option value="warm">Warm Tier</option>
+            <option value="cold">Cold Tier</option>
+          </select>
         </div>
       </div>
 
       {/* Leads Table */}
-      <div className="rounded-2xl border border-zinc-800 bg-zinc-900/40 overflow-hidden shadow-xl">
-        <table className="w-full text-left text-xs text-zinc-300">
-          <thead className="border-b border-zinc-800 bg-zinc-950/70 text-zinc-400 font-medium">
-            <tr>
-              <th className="px-4 py-3">Lead / Contact</th>
-              <th className="px-4 py-3">Company</th>
-              <th className="px-4 py-3">AI Qualification</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Source</th>
-              <th className="px-4 py-3">Captured</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800/60">
-            {filteredLeads.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-zinc-500">
-                  No lead records match the selected filters.
-                </td>
-              </tr>
-            ) : (
-              filteredLeads.map((lead) => (
-                <tr key={lead.id} className="hover:bg-zinc-800/40 transition-colors group">
-                  <td className="px-4 py-3.5">
-                    <div className="flex flex-col">
+      {filteredLeads.length === 0 ? (
+        <EmptyState
+          icon={<Users className="h-6 w-6" />}
+          title={initialLeads.length === 0 ? 'No leads captured yet' : 'No matching leads'}
+          description={
+            initialLeads.length === 0
+              ? 'Leads ingested via webhook forms or manual test triggers will automatically appear here.'
+              : 'Try adjusting your search query or filter settings.'
+          }
+        />
+      ) : (
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-zinc-50 border-b border-zinc-200/80 text-zinc-500 font-medium">
+                <tr>
+                  <th className="py-3 px-6">Name & Contact</th>
+                  <th className="py-3 px-4">Company</th>
+                  <th className="py-3 px-4">AI Tier</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Budget / Interest</th>
+                  <th className="py-3 px-4">Source</th>
+                  <th className="py-3 px-6 text-right">Received</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-100">
+                {filteredLeads.map((lead) => (
+                  <tr key={lead.id} className="hover:bg-zinc-50/60 transition-colors">
+                    <td className="py-3.5 px-6">
                       <Link
                         href={`/leads/${lead.id}`}
-                        className="font-semibold text-zinc-100 group-hover:text-purple-400 transition-colors inline-flex items-center gap-1.5"
+                        className="font-semibold text-zinc-900 hover:text-indigo-600 transition-colors"
                       >
-                        <span>{lead.name}</span>
-                        <ArrowUpRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {lead.name}
                       </Link>
-                      {lead.email ? (
-                        <span className="text-[11px] font-mono text-zinc-400 flex items-center gap-1 mt-0.5">
-                          <Mail className="h-2.5 w-2.5 text-zinc-500" />
-                          {lead.email}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-mono text-zinc-600">No email (ID: {lead.id.slice(0, 6)})</span>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {lead.company ? (
-                      <span className="text-zinc-200 font-medium inline-flex items-center gap-1">
-                        <Building className="h-3 w-3 text-zinc-500" />
-                        {lead.company}
-                      </span>
-                    ) : (
-                      <span className="text-zinc-600">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3.5">
-                    {getTierBadge(lead.qualification_status, lead.qualification_score)}
-                  </td>
-                  <td className="px-4 py-3.5">{getStatusBadge(lead.status)}</td>
-                  <td className="px-4 py-3.5">
-                    <span className="capitalize text-zinc-400 font-mono text-[11px]">
+                      <div className="text-[11px] text-zinc-500">{lead.email || 'No email provided'}</div>
+                    </td>
+                    <td className="py-3.5 px-4 font-medium text-zinc-700">
+                      {lead.company || '—'}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {getTierBadge(lead.qualification_status, lead.qualification_score)}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {getStatusBadge(lead.status)}
+                    </td>
+                    <td className="py-3.5 px-4 text-zinc-600">
+                      <div>{lead.estimated_budget ? `$${lead.estimated_budget.toLocaleString()}` : '—'}</div>
+                      <div className="text-[10px] text-zinc-400 truncate max-w-xs">{lead.service_interest || 'General Inquiry'}</div>
+                    </td>
+                    <td className="py-3.5 px-4 text-zinc-500 font-mono text-[11px]">
                       {lead.source}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3.5 text-zinc-400 font-mono text-[11px]">
-                    {new Date(lead.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <Link href={`/leads/${lead.id}`}>
-                      <Button variant="ghost" size="sm" className="h-7 text-xs px-2.5">
-                        View Lead
-                      </Button>
-                    </Link>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                    </td>
+                    <td className="py-3.5 px-6 text-right text-zinc-500 whitespace-nowrap">
+                      {new Date(lead.created_at).toLocaleDateString([], {
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="p-4 border-t border-zinc-100 bg-zinc-50/50 flex items-center justify-between text-xs text-zinc-500">
+              <span>
+                Showing {filteredLeads.length} of {totalCount} leads (Page {currentPage} of {totalPages})
+              </span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage <= 1}
+                  onClick={() => router.push(`/leads?page=${currentPage - 1}`)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  <span>Previous</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage >= totalPages}
+                  onClick={() => router.push(`/leads?page=${currentPage + 1}`)}
+                >
+                  <span>Next</span>
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }
