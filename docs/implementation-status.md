@@ -10,7 +10,8 @@
 | **Phase 3** | **Durable Execution Engine (Inngest)** | **COMPLETED** | Inngest function handlers, DAG linearization runner with step memoization & durable sleep timers, server-side node executor registry for all 9 node types, safe declarative field expression resolver without `eval()`, mid-flight cancellation & linked reruns, run & step audit logs (`workflow_runs`, `workflow_step_runs`, `trigger_events`), Runs UI history table (`/runs`) and run detail inspector screen (`/runs/[id]`), plus Test Run trigger on workflow detail. |
 | **Phase 4** | **Visual Workflow Builder (React Flow)** | **COMPLETED** | Drag-and-drop canvas powered by `@xyflow/react`, categorized node palette (Triggers, Logic, AI, Integrations), custom node cards & connection handles with labeled IF/ELSE TRUE/FALSE outputs, node configuration inspector side panel with dynamic variable tag inserters, zoom, pan, minimap, dirty state tracking, live test run status overlay, and mobile responsive overview fallback. |
 | **Phase 5** | **Lead Capture & Built-in CRM Engine** | **COMPLETED** | Migration for `leads`, `lead_activities`, and `webhook_endpoints`; email normalization (`lower(trim(email))`) & alternate identity strategy; public authenticated webhook ingestion API (`/api/v1/webhook/[slug]`) with per-endpoint secret token auth, secret rotation, 1MB size limit, rate limiting, and idempotency key support; CRM upsert node executor; Leads inbox table with search, filters, pagination; Lead detail inspector with AI qualification card and chronological activity timeline with manual notes; interactive webhook tester with copyable cURL, JS, Python snippets. |
-| **Phase 6** | **End-to-End Verification & Hardening** | In Progress / Next | Comprehensive integration tests with primary MVP lead flow, mock/live environment switching, error recovery, and production readiness check. |
+| **Phase 6** | **AI Actions & Enterprise Intelligence** | **COMPLETED** | Server-side AI provider interface with OpenAI adapter (`OpenAiAdapter`) and deterministic demo adapter (`MockAiAdapter`); model configuration via `OPENAI_MODEL`; structured output for AI Lead Qualification, Text Classification, and Email Response Drafting validated with Zod schemas; prompt injection defense with isolation boundary fences (`wrapUntrustedInput`); timeout and retry exponential backoff logic; token usage and latency recording; per-workspace AI quota enforcement (`assertWorkspaceAiQuota`). |
+| **Phase 7** | **End-to-End Verification & Hardening** | In Progress / Next | Comprehensive end-to-end integration run, mock/live environment verification, and production release checklist. |
 
 ---
 
@@ -34,24 +35,27 @@
 | **Webhook Ingestion** | `/api/v1/webhook/[slug]`, secret auth, rate limiting, deduplication | Ready | Fast acceptance (`202 Accepted`), async workflow dispatch, 1MB limit |
 | **Lead Normalization** | Email normalization `lower(trim(email))`, alternate fallback key | Ready | `src/lib/crm/leads.ts` with workspace-scoped deduplication |
 | **Webhook Tester** | Live tester form, secret rotation, cURL/JS/Python snippets | Ready | `/integrations` and `src/components/integrations/webhook-tester.tsx` |
+| **AI Provider System** | `AiProvider` interface, OpenAI & Deterministic Mock adapters | Ready | `src/lib/ai/` with provider factory, OpenAI adapter, and Mock adapter |
+| **AI Qualification** | Structured output (score 0-100, category, priority, next action) | Ready | Zod validated schema `AiQualificationResultSchema` |
+| **Text Classification** | Multi-class label classification with confidence & reasoning | Ready | Zod validated schema `AiTextClassificationResultSchema` |
+| **Email Response Drafting** | Contextual email drafting with HTML/text separation | Ready | Explicitly marked `is_draft: true` separate from sent messages |
+| **AI Security & Limits** | Anti-injection fences, timeouts, retries, workspace quotas | Ready | `wrapUntrustedInput` & `assertWorkspaceAiQuota` |
 
 ---
 
-## 3. Phase 5 Verification & Testing Checklist
+## 3. Phase 6 Verification & Testing Checklist
 
-- [x] Versioned Supabase migration `20261008000002_crm_and_webhooks.sql` created for `leads`, `lead_activities`, and `webhook_endpoints` with workspace RLS
-- [x] Defined email normalization rule `lower(trim(email))` with workspace-scoped uniqueness
-- [x] Defined alternate identity strategy for leads without email (phone, external_id, or synthetic unique fallback key)
-- [x] CRM upsert executor node integrated with durable workflow engine
-- [x] Public webhook trigger endpoint (`/api/v1/webhook/[slug]`) with per-endpoint secret token authentication
-- [x] Secret rotation support with UI and server action
-- [x] Webhook payload size limits (1MB) and rate limiting (60 req/min)
-- [x] Webhook idempotency key support and duplicate event suppression
-- [x] Fast acceptance response (`202 Accepted`) after durable lead persistence and asynchronous workflow trigger
-- [x] Inactive or disabled workflows strictly reject incoming webhook runs with `403 Forbidden`
-- [x] Leads table view (`/leads`) with search, status filters, AI qualification tier filters, and pagination
-- [x] Lead detail page (`/leads/[id]`) with AI qualification scorecard, contact info, status updater, and chronological activity timeline with note creation
-- [x] Authenticated sample lead form and copyable cURL / JavaScript / Python request generator on `/integrations`
-- [x] Automated test suite `scripts/run-crm-webhook-tests.ts` passing (13/13 tests)
+- [x] Server-side AI provider interface with OpenAI adapter (`OpenAiAdapter`) and deterministic demo adapter (`MockAiAdapter`)
+- [x] Configurable OpenAI model via environment configuration (`OPENAI_MODEL`, default `gpt-4o-mini`)
+- [x] Validated structured output for AI Lead Qualification with category, qualification_score (0-100), priority, summary, suggested_next_action, and disclaimer
+- [x] Validated structured output for Text Classification (labels, confidence, reasoning)
+- [x] Validated structured output for Email Response Drafting with HTML/plain-text separation and explicit `is_draft: true` flag
+- [x] Zod validation for all model inputs and outputs
+- [x] Anti-prompt injection defense treating all lead input as untrusted data using XML boundary isolation tags (`wrapUntrustedInput`)
+- [x] Security rule: AI outputs never directly execute tools or grant permissions
+- [x] Input size truncation (max 6,000 chars), timeout handling via `AbortController`, and exponential retry backoff
+- [x] Token usage (`prompt_tokens`, `completion_tokens`, `total_tokens`) and latency (ms) recorded in execution metadata
+- [x] Per-workspace AI usage limit and quota enforcement (`assertWorkspaceAiQuota`)
+- [x] Automated test suite `scripts/run-ai-tests.ts` passing (24/24 tests)
 - [x] TypeScript type check (`npx tsc --noEmit`) passing with 0 errors
-- [x] Production build (`npm run build`) passing cleanly
+- [x] Next.js production build (`npm run build`) passing cleanly

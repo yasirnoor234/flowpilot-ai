@@ -180,37 +180,57 @@ export const delayExecutor: NodeExecutor = {
 };
 
 // -----------------------------------------------------------------------------
-// 5. AI Qualification Executor (Demo / Live Adapter)
+// 5. AI Qualification Executor (OpenAI + Deterministic Mock Fallback)
 // -----------------------------------------------------------------------------
 export const aiQualifyExecutor: NodeExecutor = {
   async execute(node, resolvedConfig, context) {
-    const prompt = resolvedConfig.prompt_template || '';
-    const model = resolvedConfig.model || 'gpt-4o-mini';
+    const { executeAiLeadQualification } = await import('@/lib/ai');
 
-    // Extract budget / numeric hints if present
-    const budgetStr = JSON.stringify(context.triggerPayload).match(/\$?[0-9,]+(\.[0-9]{2})?/)?.[0] || '';
-    const numericBudget = parseFloat(budgetStr.replace(/[^0-9.]/g, '')) || 0;
+    const leadMessage =
+      resolvedConfig.prompt_template ||
+      context.triggerPayload.message ||
+      context.triggerPayload.inquiry ||
+      JSON.stringify(context.triggerPayload);
 
-    let qualificationScore = 75;
-    let leadTier = 'warm';
+    const leadName =
+      context.triggerPayload.name ||
+      context.triggerPayload.full_name ||
+      (context.triggerPayload.first_name ? `${context.triggerPayload.first_name} ${context.triggerPayload.last_name || ''}`.trim() : null);
 
-    if (numericBudget >= 10000 || prompt.toLowerCase().includes('enterprise') || prompt.toLowerCase().includes('immediate')) {
-      qualificationScore = 92;
-      leadTier = 'hot';
-    } else if (numericBudget > 0 && numericBudget < 3000) {
-      qualificationScore = 45;
-      leadTier = 'cold';
-    }
+    const leadCompany = context.triggerPayload.company || null;
+    const serviceInterest = context.triggerPayload.service_interest || context.triggerPayload.service || null;
+    const estimatedBudget = context.triggerPayload.estimated_budget || context.triggerPayload.budget || null;
+
+    const { result, metadata } = await executeAiLeadQualification(
+      {
+        message: String(leadMessage),
+        lead_name: leadName,
+        company: leadCompany,
+        service_interest: serviceInterest,
+        estimated_budget: estimatedBudget,
+      },
+      {
+        workspaceId: context.workspaceId,
+        modelOverride: resolvedConfig.model,
+      }
+    );
 
     return {
       output: {
-        model,
-        qualification_score: qualificationScore,
-        lead_tier: leadTier,
-        reasoning: `AI evaluated lead with intent indicators. Budget estimate: $${numericBudget || 'standard'}. Assigned tier: ${leadTier.toUpperCase()}.`,
-        recommended_action: leadTier === 'hot' ? 'immediate_executive_followup' : 'standard_email_sequence',
+        model: metadata.model,
+        provider: metadata.provider,
+        qualification_score: result.qualification_score,
+        lead_tier: result.lead_tier,
+        category: result.category,
+        priority: result.priority,
+        summary: result.summary,
+        reasoning: `${result.summary} ${result.budget_analysis || ''}`.trim(),
+        recommended_action: result.suggested_next_action,
+        intent_signals: result.intent_signals,
+        explanation_disclaimer: result.explanation_disclaimer,
+        tokens_used: metadata.total_tokens,
+        latency_ms: metadata.latency_ms,
         evaluated_at: new Date().toISOString(),
-        adapter_mode: 'demo_structured_output',
       },
       idempotencyKey: `ai-${context.runId}-${node.id}`,
     };
