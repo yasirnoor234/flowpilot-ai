@@ -7,6 +7,8 @@ import type { WorkflowRecord, WorkflowVersionRecord, WorkflowGraph, WorkflowStat
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { WorkflowCanvas } from './canvas/workflow-canvas';
+import { WorkflowMobileView } from './canvas/workflow-mobile-view';
 import { WorkflowValidatorPanel } from './workflow-validator-panel';
 import { VersionHistory } from './version-history';
 import { validateWorkflowForPublishing } from '@/lib/workflow/validator';
@@ -31,6 +33,7 @@ import {
   Play,
   Activity,
   Sparkles,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface WorkflowDetailProps {
@@ -45,7 +48,7 @@ export function WorkflowDetail({
   workspaceName,
 }: WorkflowDetailProps) {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'editor' | 'validator' | 'history'>('editor');
+  const [activeTab, setActiveTab] = useState<'canvas' | 'json' | 'validator' | 'history'>('canvas');
   const [draftGraph, setDraftGraph] = useState<WorkflowGraph>(workflow.draft_graph);
   const [rawJsonText, setRawJsonText] = useState(JSON.stringify(workflow.draft_graph, null, 2));
   const [jsonError, setJsonError] = useState<string | null>(null);
@@ -184,6 +187,20 @@ export function WorkflowDetail({
     });
   };
 
+  const handleSaveCanvasGraph = async (newGraph: WorkflowGraph) => {
+    setDraftGraph(newGraph);
+    setRawJsonText(JSON.stringify(newGraph, null, 2));
+    const result = await saveDraftGraphAction(workflow.id, newGraph);
+    if (result.error) {
+      alert(result.error);
+      return { error: result.error };
+    } else {
+      setSaveMessage('Draft graph saved successfully!');
+      setTimeout(() => setSaveMessage(null), 3000);
+      return { success: true };
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Back to Workflows Breadcrumb & Header */}
@@ -319,22 +336,34 @@ export function WorkflowDetail({
       <div className="flex items-center justify-between border-b border-zinc-800">
         <div className="flex items-center gap-1">
           <button
-            onClick={() => setActiveTab('editor')}
+            onClick={() => setActiveTab('canvas')}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
-              activeTab === 'editor'
-                ? 'border-indigo-500 text-indigo-400 font-semibold'
+              activeTab === 'canvas'
+                ? 'border-purple-500 text-purple-400 font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
           >
-            <Layers className="h-4 w-4" />
-            <span>Draft DAG Graph ({draftGraph.nodes.length} Nodes)</span>
+            <LayoutGrid className="h-4 w-4" />
+            <span>Visual Builder</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('json')}
+            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+              activeTab === 'json'
+                ? 'border-purple-500 text-purple-400 font-semibold'
+                : 'border-transparent text-zinc-400 hover:text-zinc-200'
+            }`}
+          >
+            <FileJson className="h-4 w-4" />
+            <span>Graph JSON ({draftGraph.nodes.length} Nodes)</span>
           </button>
 
           <button
             onClick={() => setActiveTab('validator')}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
               activeTab === 'validator'
-                ? 'border-indigo-500 text-indigo-400 font-semibold'
+                ? 'border-purple-500 text-purple-400 font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -351,7 +380,7 @@ export function WorkflowDetail({
             onClick={() => setActiveTab('history')}
             className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
               activeTab === 'history'
-                ? 'border-indigo-500 text-indigo-400 font-semibold'
+                ? 'border-purple-500 text-purple-400 font-semibold'
                 : 'border-transparent text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -361,34 +390,52 @@ export function WorkflowDetail({
         </div>
 
         {/* Template Shortcut Dropdown */}
-        {activeTab === 'editor' && (
-          <div className="flex items-center gap-2 pb-2">
-            <span className="text-[11px] text-zinc-500 hidden sm:inline">Load Preset:</span>
-            <select
-              onChange={(e) => {
-                if (e.target.value) {
-                  handleLoadTemplate(e.target.value);
-                  e.target.value = '';
-                }
-              }}
-              defaultValue=""
-              className="rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300 focus:outline-none focus:border-indigo-500"
-            >
-              <option value="" disabled>
-                Select Template...
+        <div className="flex items-center gap-2 pb-2">
+          <span className="text-[11px] text-zinc-500 hidden sm:inline">Load Preset:</span>
+          <select
+            onChange={(e) => {
+              if (e.target.value) {
+                handleLoadTemplate(e.target.value);
+                e.target.value = '';
+              }
+            }}
+            defaultValue=""
+            className="rounded-lg border border-zinc-800 bg-zinc-900 px-2.5 py-1 text-xs text-zinc-300 focus:outline-none focus:border-purple-500"
+          >
+            <option value="" disabled>
+              Select Template...
+            </option>
+            {WORKFLOW_TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
               </option>
-              {WORKFLOW_TEMPLATES.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Tab 1: Draft Graph & Nodes Inspector */}
-      {activeTab === 'editor' && (
+      {/* Tab 1: Visual Drag-and-Drop Builder */}
+      {activeTab === 'canvas' && (
+        <div>
+          <div className="hidden md:block">
+            <WorkflowCanvas
+              initialGraph={draftGraph}
+              workflowId={workflow.id}
+              isPublished={!!workflow.active_version_id}
+              onSaveGraph={handleSaveCanvasGraph}
+              onOpenPublishModal={() => setIsPublishModalOpen(true)}
+              onOpenTestRunModal={() => setIsTestRunModalOpen(true)}
+              isSaving={isPending}
+            />
+          </div>
+          <div className="block md:hidden">
+            <WorkflowMobileView graph={draftGraph} />
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: Draft Graph & Nodes JSON Inspector */}
+      {activeTab === 'json' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left: Interactive Node Steps Explorer */}

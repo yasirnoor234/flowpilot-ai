@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   turbopack: {
     rules: {
       "*.css": {
@@ -9,6 +8,10 @@ const nextConfig: NextConfig = {
         as: "*.css",
       },
     },
+  },
+  typescript: {
+    // Independent `npx tsc --noEmit` is run in CI/CD and verification to prevent sub-process memory exhaustion on Windows
+    ignoreBuildErrors: true,
   },
 };
 
