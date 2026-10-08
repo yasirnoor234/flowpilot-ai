@@ -3,15 +3,35 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 import type { Database } from '@/types/database';
 
+export function getSupabaseConfig() {
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim().replace(/\/+$/, '');
+  const supabaseAnonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    ''
+  ).trim();
+
+  const isConfigured = Boolean(
+    supabaseUrl &&
+    !supabaseUrl.includes('placeholder') &&
+    supabaseAnonKey &&
+    !supabaseAnonKey.includes('placeholder')
+  );
+
+  return {
+    supabaseUrl: supabaseUrl || 'https://placeholder.supabase.co',
+    supabaseAnonKey: supabaseAnonKey || 'placeholder-anon-key',
+    isConfigured,
+  };
+}
+
 /**
  * Creates a server-side Supabase client for Server Components, Server Actions, and Route Handlers.
  * Uses the user's cookies to enforce Row Level Security (RLS).
  */
 export async function createClient() {
   const cookieStore = await cookies();
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+  const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
 
   return createServerClient<Database>(
     supabaseUrl,
@@ -45,11 +65,11 @@ export async function createClient() {
  * NEVER expose this to the browser or use outside of protected server jobs / webhooks.
  */
 export function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { supabaseUrl } = getSupabaseConfig();
+  const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 
-  if (!serviceRoleKey) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined in server environment variables.');
+  if (!serviceRoleKey || serviceRoleKey.includes('placeholder')) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not defined or is placeholder in server environment variables.');
   }
 
   return createSupabaseClient<Database>(supabaseUrl, serviceRoleKey, {

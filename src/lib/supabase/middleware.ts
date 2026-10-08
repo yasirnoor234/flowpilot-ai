@@ -8,8 +8,12 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim().replace(/\/+$/, '');
+  const supabaseAnonKey = (
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    ''
+  ).trim();
 
   if (!supabaseUrl || !supabaseAnonKey || supabaseUrl.includes('placeholder')) {
     return response;
@@ -59,7 +63,6 @@ export async function updateSession(request: NextRequest) {
 
   const isProtectedRoute =
     pathname.startsWith('/overview') ||
-    pathname.startsWith('/dashboard') ||
     pathname.startsWith('/workflows') ||
     pathname.startsWith('/leads') ||
     pathname.startsWith('/integrations') ||
@@ -67,19 +70,14 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith('/settings') ||
     pathname.startsWith('/onboarding');
 
-  // If user is not authenticated and trying to access protected routes -> redirect to /login
-  if (!user && isProtectedRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    redirectUrl.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(redirectUrl);
+  // If user is authenticated and on an auth page, redirect to overview
+  if (user && isAuthRoute) {
+    return NextResponse.redirect(new URL('/overview', request.url));
   }
 
-  // If user is authenticated and trying to access auth pages -> redirect to /overview
-  if (user && isAuthRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/overview';
-    return NextResponse.redirect(redirectUrl);
+  // If user is unauthenticated and on a protected page, redirect to login
+  if (!user && isProtectedRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return response;
