@@ -317,23 +317,44 @@ export const crmUpsertExecutor: NodeExecutor = {
 };
 
 // -----------------------------------------------------------------------------
-// 7. Email Send Executor (Demo Resend Adapter)
+// 7. Email Send Executor (Resend Live / Demo Adapter)
 // -----------------------------------------------------------------------------
 export const sendEmailExecutor: NodeExecutor = {
   async execute(node, resolvedConfig, context) {
-    const to = resolvedConfig.to || 'recipient@example.com';
-    const subject = resolvedConfig.subject || 'Automated Update';
+    const { sendResendEmail } = await import('@/lib/integrations/resend');
+
+    const to =
+      resolvedConfig.to ||
+      context.triggerPayload.email ||
+      context.triggerPayload.lead_email ||
+      'prospect@example.com';
+    const subject = resolvedConfig.subject || 'Follow-up from FlowPilot AI';
+    const body = resolvedConfig.body || 'Thank you for reaching out to us. We will review your request shortly.';
     const idempotencyKey = `email-${context.runId}-${node.id}`;
+
+    const result = await sendResendEmail({
+      workspaceId: context.workspaceId,
+      to,
+      subject,
+      html: body.includes('<') ? body : undefined,
+      text: !body.includes('<') ? body : undefined,
+      from: resolvedConfig.from_name,
+      idempotencyKey,
+      workflowRunId: context.runId,
+      workflowStepId: node.id,
+    });
 
     return {
       output: {
-        provider_message_id: `msg_resend_mock_${Math.random().toString(36).substring(2, 10)}`,
+        provider_message_id: result.messageId || `msg_${Date.now()}`,
         to,
         subject,
-        from: resolvedConfig.from_name || 'FlowPilot AI',
+        status: result.status,
+        delivered: result.success,
+        is_simulated: result.isSimulated || false,
         sent_at: new Date().toISOString(),
         idempotency_key: idempotencyKey,
-        adapter_mode: 'demo_resend',
+        latency_ms: result.latencyMs,
       },
       idempotencyKey,
     };
@@ -341,22 +362,47 @@ export const sendEmailExecutor: NodeExecutor = {
 };
 
 // -----------------------------------------------------------------------------
-// 8. Slack Notification Executor (Demo Slack Adapter)
+// 8. Slack Notification Executor (Slack Live / Demo Adapter)
 // -----------------------------------------------------------------------------
 export const slackNotifyExecutor: NodeExecutor = {
   async execute(node, resolvedConfig, context) {
-    const channel = resolvedConfig.channel_name || '#general';
-    const message = resolvedConfig.message_template || 'FlowPilot AI notification';
+    const { sendSlackNotification } = await import('@/lib/integrations/slack');
+
+    const channel = resolvedConfig.channel_name || '#leads-notifications';
+    const message = resolvedConfig.message_template || 'New lead processed by FlowPilot AI workflow';
     const idempotencyKey = `slack-${context.runId}-${node.id}`;
+
+    // Extract lead context if available in trigger or upstream nodes
+    const aiOutput = context.nodeOutputs['ai_qualify'] || context.nodeOutputs['node_ai_qualify'] || {};
+    const leadContext = {
+      id: context.triggerPayload.lead_id || `lead_${context.runId.slice(0, 8)}`,
+      name: context.triggerPayload.name || context.triggerPayload.full_name || 'Prospective Lead',
+      company: context.triggerPayload.company || null,
+      qualificationScore: aiOutput.qualification_score !== undefined ? aiOutput.qualification_score : null,
+      leadTier: aiOutput.lead_tier || null,
+      summary: aiOutput.summary || message,
+    };
+
+    const result = await sendSlackNotification({
+      workspaceId: context.workspaceId,
+      text: message,
+      channelOverride: channel,
+      idempotencyKey,
+      workflowRunId: context.runId,
+      workflowStepId: node.id,
+      leadContext,
+    });
 
     return {
       output: {
         channel,
         message,
-        delivered: true,
+        status: result.status,
+        delivered: result.success,
+        is_simulated: result.isSimulated || false,
         posted_at: new Date().toISOString(),
         idempotency_key: idempotencyKey,
-        adapter_mode: 'demo_slack',
+        latency_ms: result.latencyMs,
       },
       idempotencyKey,
     };
