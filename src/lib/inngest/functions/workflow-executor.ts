@@ -8,9 +8,10 @@ export const workflowExecutor = inngest.createFunction(
     id: 'workflow-durable-executor',
     name: 'Workflow Durable Snapshot Executor',
     retries: 3,
+    triggers: [{ event: 'workflow.execute' }],
   },
-  { event: 'workflow.execute' },
-  async ({ event, step }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async ({ event, step }: { event: any; step: any }) => {
     const { runId, workspaceId, workflowId, versionId, triggerPayload } = event.data;
 
     // 1. Step: Fetch and verify immutable version & run state

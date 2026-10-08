@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -543,6 +545,86 @@ export function WorkflowDetail({
                 </Button>
                 <Button type="submit" size="sm" isLoading={isPending}>
                   Publish & Activate Snapshot
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Test Run Execution Modal */}
+      {isTestRunModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Play className="h-4 w-4 text-purple-400 fill-current" />
+                <span>Execute Manual Test Run</span>
+              </h3>
+              <button
+                onClick={() => setIsTestRunModalOpen(false)}
+                className="text-xs text-zinc-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleTestRun} className="space-y-4 pt-4">
+              {testRunError && (
+                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400">
+                  {testRunError}
+                </div>
+              )}
+
+              <div className="p-3.5 rounded-xl border border-purple-500/20 bg-purple-950/20 text-xs text-purple-300 space-y-1">
+                <div className="font-semibold flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-purple-400" />
+                  <span>Durable Inngest Execution Engine</span>
+                </div>
+                <p className="text-purple-300/80 text-[11px]">
+                  Submits a trigger event to execute against the currently active immutable version snapshot with full step persistence, durable retries, and audit logs.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
+                    Test Trigger Payload (JSON)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setTestPayloadText(defaultSamplePayload)}
+                    className="text-[11px] text-purple-400 hover:underline"
+                  >
+                    Reset to Default
+                  </button>
+                </div>
+                <textarea
+                  value={testPayloadText}
+                  onChange={(e) => setTestPayloadText(e.target.value)}
+                  rows={8}
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-950 p-3 text-xs font-mono text-emerald-400 focus:border-purple-500 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-zinc-800">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsTestRunModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  isLoading={isPending}
+                  className="bg-purple-600 hover:bg-purple-500 text-white"
+                >
+                  <Play className="mr-1.5 h-3.5 w-3.5 fill-current" />
+                  <span>Launch Test Run</span>
                 </Button>
               </div>
             </form>

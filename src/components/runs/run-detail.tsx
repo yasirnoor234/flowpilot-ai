@@ -48,16 +48,16 @@ export function RunDetail({ run, steps, workspaceId }: RunDetailProps) {
   const handleCancel = () => {
     if (!confirm('Are you sure you want to cancel this in-flight run?')) return;
     startTransition(async () => {
-      await cancelWorkflowRunAction({ runId: run.id });
+      await cancelWorkflowRunAction(run.id);
       router.refresh();
     });
   };
 
   const handleRerun = () => {
     startTransition(async () => {
-      const res = await rerunWorkflowAction({ runId: run.id });
-      if (res.success && res.newRunId) {
-        router.push(`/runs/${res.newRunId}`);
+      const res = await rerunWorkflowAction(run.id);
+      if (res.success && res.runId) {
+        router.push(`/runs/${res.runId}`);
       }
     });
   };
@@ -85,14 +85,14 @@ export function RunDetail({ run, steps, workspaceId }: RunDetailProps) {
         );
       case 'failed':
         return (
-          <Badge variant="destructive" className="gap-1">
+          <Badge variant="danger" className="gap-1">
             <XCircle className="h-3 w-3" />
             <span>Failed</span>
           </Badge>
         );
       case 'running':
         return (
-          <Badge variant="info" className="gap-1 animate-pulse">
+          <Badge variant="outline" className="gap-1 text-purple-400 border-purple-500/40 animate-pulse">
             <Activity className="h-3 w-3 animate-spin" />
             <span>Running</span>
           </Badge>
@@ -106,21 +106,21 @@ export function RunDetail({ run, steps, workspaceId }: RunDetailProps) {
         );
       case 'skipped':
         return (
-          <Badge variant="neutral" className="gap-1 opacity-70">
+          <Badge variant="secondary" className="gap-1 opacity-70">
             <Ban className="h-3 w-3" />
             <span>Skipped</span>
           </Badge>
         );
       case 'canceled':
         return (
-          <Badge variant="neutral" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <Ban className="h-3 w-3" />
             <span>Canceled</span>
           </Badge>
         );
       default:
         return (
-          <Badge variant="neutral" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <Clock className="h-3 w-3" />
             <span>{status}</span>
           </Badge>
@@ -168,7 +168,7 @@ export function RunDetail({ run, steps, workspaceId }: RunDetailProps) {
 
           {['running', 'waiting', 'queued'].includes(run.status) && (
             <Button
-              variant="destructive"
+              variant="danger"
               size="sm"
               onClick={handleCancel}
               disabled={isPending}
@@ -198,7 +198,7 @@ export function RunDetail({ run, steps, workspaceId }: RunDetailProps) {
           <span className="text-zinc-500 block">Trigger Source</span>
           <span className="text-zinc-200 font-medium capitalize mt-0.5 inline-flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-purple-400" />
-            {run.trigger_source}
+            {run.trigger_type}
           </span>
         </div>
         <div>
@@ -272,7 +272,7 @@ export function RunDetail({ run, steps, workspaceId }: RunDetailProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {step.duration_ms !== undefined && step.duration_ms > 0 && (
+                      {step.duration_ms !== null && step.duration_ms !== undefined && step.duration_ms > 0 && (
                         <span className="text-[10px] font-mono text-zinc-500">
                           {step.duration_ms}ms
                         </span>

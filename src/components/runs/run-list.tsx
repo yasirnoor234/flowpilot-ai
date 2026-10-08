@@ -41,10 +41,10 @@ export function RunList({ runs, workspaceId }: RunListProps) {
   const handleRerun = (runId: string) => {
     setRerunningId(runId);
     startTransition(async () => {
-      const res = await rerunWorkflowAction({ runId });
+      const res = await rerunWorkflowAction(runId);
       setRerunningId(null);
-      if (res.success && res.newRunId) {
-        router.push(`/runs/${res.newRunId}`);
+      if (res.success && res.runId) {
+        router.push(`/runs/${res.runId}`);
       }
     });
   };
@@ -60,14 +60,14 @@ export function RunList({ runs, workspaceId }: RunListProps) {
         );
       case 'failed':
         return (
-          <Badge variant="destructive" className="gap-1">
+          <Badge variant="danger" className="gap-1">
             <XCircle className="h-3 w-3" />
             <span>Failed</span>
           </Badge>
         );
       case 'running':
         return (
-          <Badge variant="info" className="gap-1 animate-pulse">
+          <Badge variant="outline" className="gap-1 text-purple-400 border-purple-500/40 animate-pulse">
             <Activity className="h-3 w-3 animate-spin" />
             <span>Running</span>
           </Badge>
@@ -81,14 +81,14 @@ export function RunList({ runs, workspaceId }: RunListProps) {
         );
       case 'canceled':
         return (
-          <Badge variant="neutral" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <Ban className="h-3 w-3" />
             <span>Canceled</span>
           </Badge>
         );
       default:
         return (
-          <Badge variant="neutral" className="gap-1">
+          <Badge variant="secondary" className="gap-1">
             <Clock className="h-3 w-3" />
             <span>{status}</span>
           </Badge>
@@ -170,7 +170,7 @@ export function RunList({ runs, workspaceId }: RunListProps) {
                   <td className="px-4 py-3.5">
                     <div className="inline-flex items-center gap-1 text-zinc-300 font-medium">
                       <Sparkles className="h-3 w-3 text-purple-400" />
-                      <span className="capitalize">{run.trigger_source}</span>
+                      <span className="capitalize">{run.trigger_type}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3.5 text-zinc-400">

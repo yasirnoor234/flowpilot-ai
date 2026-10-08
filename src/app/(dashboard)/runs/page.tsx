@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { requireWorkspaceAuth } from '@/lib/auth/workspace-context';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { RunList } from '@/components/runs/run-list';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import type { WorkflowRunRecord } from '@/types/execution';
 
 export default async function RunsPage() {
   const context = await requireWorkspaceAuth();
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createClient();
 
   const { data: runs } = await supabase
     .from('workflow_runs')
