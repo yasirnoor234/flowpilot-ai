@@ -157,6 +157,49 @@ export async function executeWorkflowSnapshot(
     // Resolve inputs only from trigger and permitted upstream outputs
     const resolvedConfig = resolveConfigExpressions(node.config, context);
 
+    // Follow-up State Re-reading & Eligibility Check:
+    // If this node is a delay or configured for follow-up eligibility, re-read lead status from live database
+    if (resolvedConfig.follow_up_eligibility_check || (node.config as any)?.follow_up_eligibility_check) {
+      const leadId = context.triggerPayload.lead_id || context.nodeOutputs['crm_upsert']?.crm_record_id || context.nodeOutputs['action_crm_upsert']?.crm_record_id;
+      if (leadId && supabase) {
+        const { data: leadData } = await supabase
+          .from('leads')
+          .select('status, custom_attributes')
+          .eq('id', leadId)
+          .eq('workspace_id', workspaceId)
+          .maybeSingle();
+
+        const currentLead = leadData as { status: string; custom_attributes?: Record<string, any> } | null;
+        const leadStatus = currentLead?.status;
+        const isOptedOut = currentLead?.custom_attributes?.opted_out === true;
+
+        if (leadStatus === 'won' || leadStatus === 'converted' || leadStatus === 'lost' || leadStatus === 'unqualified' || isOptedOut) {
+          const skipReason = `Skipped: Lead status is "${leadStatus || 'opted_out'}" — follow-up no longer eligible.`;
+          stepResults[nodeId] = { status: 'skipped', error: skipReason };
+
+          if (hooks?.onStepSkipped) {
+            await hooks.onStepSkipped(nodeId, skipReason);
+          }
+
+          if (supabase) {
+            await supabase.from('workflow_step_runs').insert({
+              id: crypto.randomUUID(),
+              run_id: runId,
+              workspace_id: workspaceId,
+              node_id: nodeId,
+              node_type: node.type,
+              node_title: node.title,
+              status: 'skipped',
+              error_message: skipReason,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            } as unknown as never);
+          }
+          continue;
+        }
+      }
+    }
+
     const executor = NODE_EXECUTORS[node.type];
     if (!executor) {
       const errMsg = `No executor registered for node type "${node.type}".`;

@@ -12,7 +12,7 @@
 | **Phase 5** | **Lead Capture & Built-in CRM Engine** | **COMPLETED** | Migration for `leads`, `lead_activities`, and `webhook_endpoints`; email normalization (`lower(trim(email))`) & alternate identity strategy; public authenticated webhook ingestion API (`/api/v1/webhook/[slug]`) with per-endpoint secret token auth, secret rotation, 1MB size limit, rate limiting, and idempotency key support; CRM upsert node executor; Leads inbox table with search, filters, pagination; Lead detail inspector with AI qualification card and chronological activity timeline with manual notes; interactive webhook tester with copyable cURL, JS, Python snippets. |
 | **Phase 6** | **AI Actions & Enterprise Intelligence** | **COMPLETED** | Server-side AI provider interface with OpenAI adapter (`OpenAiAdapter`) and deterministic demo adapter (`MockAiAdapter`); model configuration via `OPENAI_MODEL`; structured output for AI Lead Qualification, Text Classification, and Email Response Drafting validated with Zod schemas; prompt injection defense with isolation boundary fences (`wrapUntrustedInput`); timeout and retry exponential backoff logic; token usage and latency recording; per-workspace AI quota enforcement (`assertWorkspaceAiQuota`). |
 | **Phase 7** | **Live Email (Resend) & Slack Integrations** | **COMPLETED** | Migration `20261008000003_integrations_and_connections.sql` for `integration_connections` and `integration_action_attempts` with RLS; AES-256-GCM server-side encryption with key derivation and secret redaction; Slack webhook host validation & SSRF prevention; Resend transactional email adapter with verified sender and test recipient safeguards; Slack Block Kit alert cards with direct lead links; Integration settings UI with credential editing, live test sends, and action audit trail. |
-| **Phase 8** | **End-to-End Verification & Production Readiness** | In Progress / Next | Comprehensive end-to-end integration run, mock/live environment verification, and production release checklist. |
+| **Phase 8** | **Follow-ups, Templates & Operational Monitoring** | **COMPLETED** | 3 production workflow templates (Lead Qualification & Response, Customer Support Classification, Proposal Follow-up); Durable delays with live database lead status re-reading; Follow-up eligibility checks skipping won/lost/opted-out leads; Operational Monitoring Dashboard (`/overview`) with real database metrics and formula-backed estimated time saved; Enhanced Runs table (`/runs`) and Run inspector (`/runs/[id]`) with secret redaction, date filters, duplicate-action warning rerun modal, and skipped reasons; Full end-to-end verification script. |
 
 ---
 
@@ -40,21 +40,23 @@
 | **Resend Integration** | Live email dispatch, verified sender, test recipient safety | Ready | `src/lib/integrations/resend.ts` & `action_send_email` |
 | **Slack Integration** | Block Kit alerts, SSRF validation (`hooks.slack.com`) | Ready | `src/lib/integrations/slack.ts` & `action_slack_notify` |
 | **Integration Settings** | Connection cards, credential editing, test sends, audit log | Ready | `/integrations` & `src/components/integrations/integration-manager.tsx` |
+| **Workflow Templates** | 3 prebuilt production templates with draft instantiation | Ready | `src/lib/workflow/templates.ts` |
+| **Follow-up State Machine** | Re-read lead state after delay, skip inactive/closed leads | Ready | `src/lib/workflow/executor/workflow-engine.ts` |
+| **Monitoring Dashboard** | Real Postgres operational metrics, time saved formula | Ready | `/overview` with dynamic stats, alert banner, and template launcher |
+| **Runs & Step Inspection** | Date & status filters, secret redaction, duplicate warnings | Ready | `/runs` and `/runs/[id]` |
 
 ---
 
-## 3. Phase 7 Verification & Testing Checklist
+## 3. Phase 8 Verification & Testing Checklist
 
-- [x] Versioned Supabase migration `20261008000003_integrations_and_connections.sql` created for `integration_connections` and `integration_action_attempts` with workspace RLS
-- [x] Server-side AES-256-GCM encryption and decryption with key derivation (`encryptSecret`, `decryptSecret`)
-- [x] Secret masking for UI display (`maskSecret`) and secret redaction from logs/errors (`redactSecrets`)
-- [x] Slack webhook host validation strictly restricting requests to `hooks.slack.com` (SSRF prevention)
-- [x] Resend email adapter with verified sender, idempotency header, and demo mode test recipient safeguard
-- [x] Slack Block Kit rich notification payload generator linking directly to lead details
-- [x] Integration connection settings UI (`IntegrationManager`) with credential inputs and masked state
-- [x] Explicit test send actions for Resend email and Slack notifications with latency recording
-- [x] Action attempts audit table tracking delivery status, message IDs, latency, and sanitized errors
-- [x] Workflow node executors `action_send_email` and `action_slack_notify` updated with live and demo adapters
-- [x] Automated test suite `scripts/run-integration-tests.ts` passing (21/21 tests)
+- [x] 3 production workflow templates defined (`lead-qualification-and-response`, `customer-inquiry-classification`, `proposal-followup-reminder`)
+- [x] Required connection validation metadata (`openai`, `resend`, `slack`)
+- [x] Durable delay execution with database lead status re-reading (`evaluateFollowupEligibility`)
+- [x] Clean step skipping with explicit reasons when lead is won, converted, lost, or opted out
+- [x] Monitoring dashboard (`/overview`) with real database metrics for runs, leads, AI usage, and integration health
+- [x] Documented estimated time saved formula: `(Succeeded Runs * 12) / 60` hours
+- [x] Runs list page (`/runs`) with workflow filter, status filter, date filter, and rerun modal with duplicate-action warning
+- [x] Run detail inspector (`/runs/[id]`) with automated secret redaction (`redactSecrets`), skipped reason banners, and sensitive field masking
+- [x] Complete end-to-end verification test suite (`scripts/run-e2e-verification.ts`) passing (27/27 tests)
 - [x] TypeScript type check (`npx tsc --noEmit`) passing with 0 errors
-- [x] Next.js production build (`npm run build`) passing cleanly
+- [x] Next.js production build (`npm run build`) passing cleanly across all 19+ routes
