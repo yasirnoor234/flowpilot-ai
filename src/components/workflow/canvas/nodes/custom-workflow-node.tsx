@@ -1,8 +1,7 @@
-'use client';
-
 import React, { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { WorkflowNodeData } from '../types';
+import { useWorkflowCanvas } from '../workflow-canvas-context';
 import {
   Play,
   Webhook,
@@ -21,9 +20,15 @@ import {
   Settings,
 } from 'lucide-react';
 
-export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
+export const CustomWorkflowNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as unknown as WorkflowNodeData;
+  const canvasCtx = useWorkflowCanvas();
   const isTrigger = nodeData.type.startsWith('trigger_');
+
+  const nodeErrors = canvasCtx?.validationErrorsByNode[id] || [];
+  const hasErrors = nodeErrors.length > 0;
+  const stepRun = canvasCtx?.stepRunsByNode[id];
+
 
   const getNodeIcon = (type: string) => {
     switch (type) {
@@ -108,7 +113,7 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
         selected
           ? theme.selectedBorder
           : 'border-zinc-200 hover:border-zinc-300'
-      } ${nodeData.hasValidationError ? 'border-red-400 bg-red-50/20' : ''}`}
+      } ${hasErrors ? 'border-red-400 bg-red-50/20' : ''}`}
     >
       {/* Target Connection Handle (Top) */}
       {!isTrigger && (
@@ -137,37 +142,37 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
 
         {/* Action Controls */}
         <div className="flex items-center gap-0.5 shrink-0 opacity-80 hover:opacity-100">
-          {nodeData.onOpenConfig && (
+          {canvasCtx?.onOpenConfig && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                nodeData.onOpenConfig?.(nodeData.nodeId);
+                canvasCtx.onOpenConfig(id);
               }}
-              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
               title="Configure Node"
             >
               <Settings className="h-3 w-3" />
             </button>
           )}
-          {nodeData.onDuplicateNode && (
+          {canvasCtx?.onDuplicateNode && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                nodeData.onDuplicateNode?.(nodeData.nodeId);
+                canvasCtx.onDuplicateNode(id);
               }}
-              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
+              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
               title="Duplicate"
             >
               <Copy className="h-3 w-3" />
             </button>
           )}
-          {nodeData.onDeleteNode && (
+          {canvasCtx?.onDeleteNode && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                nodeData.onDeleteNode?.(nodeData.nodeId);
+                canvasCtx.onDeleteNode(id);
               }}
-              className="p-1 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50"
+              className="p-1 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
               title="Delete"
             >
               <Trash2 className="h-3 w-3" />
@@ -182,35 +187,35 @@ export const CustomWorkflowNode = memo(({ data, selected }: NodeProps) => {
       </div>
 
       {/* Live Test Run Execution Status Badge */}
-      {nodeData.executionStatus && (
+      {stepRun?.status && (
         <div className="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between text-[11px]">
           <div className="flex items-center gap-1.5">
-            {nodeData.executionStatus === 'succeeded' && (
+            {stepRun.status === 'succeeded' && (
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
             )}
-            {nodeData.executionStatus === 'running' && (
+            {stepRun.status === 'running' && (
               <div className="h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
             )}
-            {nodeData.executionStatus === 'failed' && (
+            {stepRun.status === 'failed' && (
               <XCircle className="h-3.5 w-3.5 text-red-600" />
             )}
             <span className="font-medium capitalize text-zinc-700">
-              {nodeData.executionStatus}
+              {stepRun.status}
             </span>
           </div>
-          {nodeData.executionDurationMs !== undefined && (
+          {stepRun.duration_ms !== undefined && (
             <span className="text-zinc-400 tabular-nums">
-              {nodeData.executionDurationMs}ms
+              {stepRun.duration_ms}ms
             </span>
           )}
         </div>
       )}
 
       {/* Validation Warning */}
-      {nodeData.hasValidationError && (
+      {hasErrors && (
         <div className="mt-2 flex items-center gap-1 text-[10px] text-red-600 font-medium">
           <AlertTriangle className="h-3 w-3 shrink-0" />
-          <span className="truncate">{nodeData.validationErrorMessage || 'Invalid Configuration'}</span>
+          <span className="truncate">{nodeErrors[0] || 'Invalid Configuration'}</span>
         </div>
       )}
 

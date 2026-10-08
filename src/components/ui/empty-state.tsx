@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 
 interface EmptyStateProps {
-  icon?: React.ReactNode | React.ComponentType<{ className?: string }>;
+  icon?: React.ReactNode;
   title: string;
   description: string;
   action?: React.ReactNode;
@@ -14,7 +14,7 @@ interface EmptyStateProps {
 }
 
 export function EmptyState({
-  icon: Icon,
+  icon,
   title,
   description,
   action,
@@ -25,9 +25,9 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <Card className={`p-8 sm:p-12 text-center flex flex-col items-center justify-center ${className}`}>
-      {Icon && (
+      {icon && (
         <div className="h-12 w-12 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-center text-zinc-500 mb-4">
-          {typeof Icon === 'function' ? <Icon className="h-6 w-6 text-zinc-500" /> : Icon}
+          {icon}
         </div>
       )}
       <h3 className="text-base font-semibold text-zinc-900 mb-1.5">{title}</h3>

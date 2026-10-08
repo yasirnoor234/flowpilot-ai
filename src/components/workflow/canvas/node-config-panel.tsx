@@ -43,7 +43,7 @@ export function NodeConfigPanel({
         setJsonText(JSON.stringify(node.config.sample_payload, null, 2));
       }
     }
-  }, [node]);
+  }, [node?.id]);
 
   if (!node) return null;
 

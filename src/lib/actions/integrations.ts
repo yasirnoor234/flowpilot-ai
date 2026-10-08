@@ -209,6 +209,64 @@ export async function testIntegrationConnectionAction(params: {
     };
   }
 
+  if (params.provider === 'openai') {
+    const startTime = performance.now();
+    try {
+      const { executeAiLeadQualification } = await import('@/lib/ai');
+      const { result, metadata } = await executeAiLeadQualification(
+        {
+          lead_name: 'Alex Vance (Test Prospect)',
+          company: 'Nexus Automations',
+          service_interest: 'Enterprise AI Lead Qualification',
+          estimated_budget: 35000,
+          message: 'Testing OpenAI connection and model evaluation from FlowPilot dashboard.',
+        },
+        {
+          workspaceId: context.workspace.id,
+        }
+      );
+
+      const latencyMs = Math.round(performance.now() - startTime);
+
+      await supabase
+        .from('integration_connections')
+        .update({
+          status: 'active',
+          last_tested_at: new Date().toISOString(),
+          last_error: null,
+        } as unknown as never)
+        .eq('workspace_id', context.workspace.id)
+        .eq('provider', 'openai');
+
+      revalidatePath('/integrations');
+      return {
+        success: true,
+        status: 'active',
+        message: `OpenAI connection verified using model ${metadata.model} (Score: ${result.qualification_score}/100, latency: ${latencyMs}ms, tokens: ${metadata.total_tokens})`,
+        latencyMs,
+      };
+    } catch (err: any) {
+      const latencyMs = Math.round(performance.now() - startTime);
+      await supabase
+        .from('integration_connections')
+        .update({
+          status: 'error',
+          last_tested_at: new Date().toISOString(),
+          last_error: err?.message || 'OpenAI test failed',
+        } as unknown as never)
+        .eq('workspace_id', context.workspace.id)
+        .eq('provider', 'openai');
+
+      revalidatePath('/integrations');
+      return {
+        success: false,
+        status: 'error',
+        message: `OpenAI connection test failed: ${err?.message || 'Unknown error'}`,
+        latencyMs,
+      };
+    }
+  }
+
   return {
     success: false,
     status: 'unsupported',

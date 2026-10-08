@@ -47,7 +47,7 @@ export default async function RunsPage() {
 
       {typedRuns.length === 0 ? (
         <EmptyState
-          icon={Activity}
+          icon={<Activity className="h-6 w-6 text-zinc-500" />}
           title="No workflow runs executed yet"
           description="When webhooks or manual triggers initiate your published workflows, durable Inngest background steps, inputs, outputs, and status logs will appear here in real-time."
           actionLabel="View Workflows"

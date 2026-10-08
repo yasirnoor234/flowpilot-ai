@@ -351,6 +351,97 @@ export function IntegrationManager({
             </Card>
           );
         })()}
+
+        {/* 3. OpenAI Intelligence */}
+        {(() => {
+          const conn = getConnection('openai');
+          const isConnected = !!conn && conn.is_active;
+          const currentModel = conn?.settings?.model || 'gpt-4o-mini';
+          return (
+            <Card className="flex flex-col justify-between">
+              <div>
+                <CardHeader className="flex flex-row items-start justify-between pb-2">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                      <Bot className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-base text-zinc-900">OpenAI Models</CardTitle>
+                      <CardDescription className="text-xs text-zinc-500">Lead qualification & email drafting</CardDescription>
+                    </div>
+                  </div>
+                  <Badge variant={isConnected ? 'success' : isDemoMode ? 'secondary' : 'warning'}>
+                    {isConnected ? 'Connected' : isDemoMode ? 'Demo Simulator' : 'Not configured'}
+                  </Badge>
+                </CardHeader>
+                <CardContent className="pt-2 space-y-3 text-xs">
+                  <p className="text-zinc-600 leading-relaxed">
+                    Evaluates inbound prospect budgets, calculates qualification scores, drafts contextual responses, and classifies lead intent.
+                  </p>
+
+                  <div className="rounded-lg bg-zinc-50 border border-zinc-200 p-3 space-y-1.5 font-mono text-[11px]">
+                    <div className="flex items-center justify-between text-zinc-700">
+                      <span className="text-zinc-500 font-sans">Active model:</span>
+                      <span className="text-zinc-900 font-medium">{currentModel}</span>
+                    </div>
+                    {conn?.masked_key ? (
+                      <div className="flex items-center justify-between text-zinc-700">
+                        <span className="text-zinc-500 font-sans">API key:</span>
+                        <span className="text-zinc-900">{conn.masked_key}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between text-zinc-500 text-[10px]">
+                        <span className="text-zinc-500 font-sans">Fallback:</span>
+                        <span>{isDemoMode ? 'Deterministic Simulator' : 'System Env / Free Demo'}</span>
+                      </div>
+                    )}
+                    {conn?.last_tested_at && (
+                      <div className="flex items-center justify-between text-zinc-500 text-[10px]">
+                        <span className="text-zinc-500 font-sans">Last verified:</span>
+                        <span className="tabular-nums">{new Date(conn.last_tested_at).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </div>
+
+              <div className="p-4 pt-0 border-t border-zinc-100 mt-4 flex items-center justify-between gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestDelivery('openai')}
+                  disabled={isPending || testingProvider === 'openai'}
+                  className="text-xs h-8 gap-1.5"
+                >
+                  <Send className={`h-3 w-3 ${testingProvider === 'openai' ? 'animate-spin' : ''}`} />
+                  <span>{testingProvider === 'openai' ? 'Evaluating...' : 'Test model'}</span>
+                </Button>
+
+                <div className="flex items-center gap-2">
+                  {isConnected && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDisconnect('openai')}
+                      className="text-xs h-8 px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  )}
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleOpenConfig('openai')}
+                    className="text-xs h-8 gap-1"
+                  >
+                    <Sliders className="h-3 w-3" />
+                    <span>{isConnected ? 'Edit settings' : 'Configure OpenAI'}</span>
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          );
+        })()}
       </div>
 
       {/* Test Execution Diagnostic Toast / Banner */}
@@ -379,7 +470,7 @@ export function IntegrationManager({
       <Dialog
         isOpen={!!activeModal}
         onClose={() => setActiveModal(null)}
-        title={`Configure ${activeModal === 'resend' ? 'Resend API' : 'Slack Webhook'}`}
+        title={`Configure ${activeModal === 'resend' ? 'Resend API' : activeModal === 'slack' ? 'Slack Webhook' : 'OpenAI Model & Key'}`}
         description="Credentials are encrypted server-side with AES-256-GCM and never exposed to client browsers."
       >
         <form onSubmit={handleSaveConnection} className="space-y-4 text-xs">
@@ -445,6 +536,40 @@ export function IntegrationManager({
                   placeholder="#leads-notifications"
                   className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                 />
+              </div>
+            </>
+          )}
+
+          {activeModal === 'openai' && (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">OpenAI API Key (sk-...)</label>
+                <input
+                  type="password"
+                  required
+                  placeholder="sk-proj-..."
+                  value={secretKeyInput}
+                  onChange={(e) => setSecretKeyInput(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 font-mono text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                />
+                <span className="text-[11px] text-zinc-500 block">Encrypted securely with AES-256-GCM.</span>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-zinc-700 font-medium">Model</label>
+                <select
+                  value={openaiModelInput}
+                  onChange={(e) => setOpenaiModelInput(e.target.value)}
+                  className="w-full bg-white border border-zinc-300 rounded-lg px-3 py-2 text-zinc-900 text-xs focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="gpt-4o-mini">gpt-4o-mini (Recommended — $0.15/1M input, fast & efficient)</option>
+                  <option value="gpt-4o">gpt-4o (Flagship multimodal — $2.50/1M input)</option>
+                  <option value="gpt-4.1-mini">gpt-4.1-mini (Next-gen lightweight)</option>
+                  <option value="gpt-4.1">gpt-4.1 (Next-gen frontier)</option>
+                  <option value="gpt-3.5-turbo">gpt-3.5-turbo (Legacy standard)</option>
+                  <option value="o3-mini">o3-mini (Reasoning model)</option>
+                </select>
+                <span className="text-[11px] text-zinc-500 block">Default model for AI qualification, classification, and drafting.</span>
               </div>
             </>
           )}

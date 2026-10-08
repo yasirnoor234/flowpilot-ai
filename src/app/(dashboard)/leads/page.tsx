@@ -60,10 +60,11 @@ export default async function LeadsPage({ searchParams }: LeadsPageProps) {
 
       {result.leads.length === 0 && !resolvedParams.search && !resolvedParams.status && !resolvedParams.qualification ? (
         <EmptyState
-          icon={Users}
+          icon={<Users className="h-6 w-6 text-zinc-500" />}
           title="No leads captured yet"
           description="Leads ingested from webhook triggers or manual test payloads will appear here along with their AI qualification tier, budget score, and full activity history."
-          actionLabel="Go to Webhook Tester"
+          actionLabel="View Webhook Settings"
+          actionHref="/integrations"
         />
       ) : (
         <LeadList

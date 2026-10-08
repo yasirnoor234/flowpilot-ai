@@ -22,6 +22,46 @@ export * from './usage-guard';
 /**
  * Returns the appropriate AI provider instance based on environment and workspace configuration.
  */
+export async function getAiProviderForWorkspace(
+  workspaceId?: string,
+  modelOverride?: string
+): Promise<AiProvider> {
+  if (process.env.USE_MOCK_AI === 'true') {
+    return new MockAiAdapter();
+  }
+
+  // 1. Check if workspace has an encrypted OpenAI key configured in integration_connections
+  if (workspaceId) {
+    try {
+      const { createAdminClient } = await import('@/lib/supabase/server');
+      const { decryptSecret } = await import('@/lib/security/encryption');
+      const admin = createAdminClient();
+      const { data: conn } = await (admin.from('integration_connections') as any)
+        .select('*')
+        .eq('workspace_id', workspaceId)
+        .eq('provider', 'openai')
+        .eq('is_active', true)
+        .single();
+
+      if (conn?.encrypted_credentials) {
+        const decryptedKey = decryptSecret(conn.encrypted_credentials);
+        const model = modelOverride || conn.settings?.model || 'gpt-4o-mini';
+        return new OpenAiAdapter(decryptedKey, model);
+      }
+    } catch {
+      // Fallback if lookup fails
+    }
+  }
+
+  // 2. Fallback to process.env.OPENAI_API_KEY
+  if (process.env.OPENAI_API_KEY) {
+    return new OpenAiAdapter(process.env.OPENAI_API_KEY, modelOverride || process.env.OPENAI_MODEL || 'gpt-4o-mini');
+  }
+
+  // 3. Fallback to free deterministic mock adapter
+  return new MockAiAdapter();
+}
+
 export function getAiProvider(options?: {
   apiKey?: string;
   model?: string;
@@ -48,7 +88,7 @@ export async function executeAiLeadQualification(
     await assertWorkspaceAiQuota(options.workspaceId);
   }
 
-  const provider = getAiProvider({ model: options?.modelOverride });
+  const provider = await getAiProviderForWorkspace(options?.workspaceId, options?.modelOverride);
   const response = await provider.qualifyLead(input, options);
 
   if (options?.workspaceId) {
@@ -69,7 +109,7 @@ export async function executeAiTextClassification(
     await assertWorkspaceAiQuota(options.workspaceId);
   }
 
-  const provider = getAiProvider({ model: options?.modelOverride });
+  const provider = await getAiProviderForWorkspace(options?.workspaceId, options?.modelOverride);
   const response = await provider.classifyText(input, options);
 
   if (options?.workspaceId) {
@@ -90,7 +130,7 @@ export async function executeAiEmailDraft(
     await assertWorkspaceAiQuota(options.workspaceId);
   }
 
-  const provider = getAiProvider({ model: options?.modelOverride });
+  const provider = await getAiProviderForWorkspace(options?.workspaceId, options?.modelOverride);
   const response = await provider.draftEmail(input, options);
 
   if (options?.workspaceId) {
@@ -99,3 +139,4 @@ export async function executeAiEmailDraft(
 
   return response;
 }
+

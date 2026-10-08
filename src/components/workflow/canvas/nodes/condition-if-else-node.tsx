@@ -1,8 +1,7 @@
-'use client';
-
 import React, { memo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { WorkflowNodeData } from '../types';
+import { useWorkflowCanvas } from '../workflow-canvas-context';
 import {
   GitFork,
   Check,
@@ -14,9 +13,14 @@ import {
   Trash2,
 } from 'lucide-react';
 
-export const ConditionIfElseNode = memo(({ data, selected }: NodeProps) => {
+export const ConditionIfElseNode = memo(({ id, data, selected }: NodeProps) => {
   const nodeData = data as unknown as WorkflowNodeData;
   const config = nodeData.config || {};
+  const canvasCtx = useWorkflowCanvas();
+
+  const nodeErrors = canvasCtx?.validationErrorsByNode[id] || [];
+  const hasErrors = nodeErrors.length > 0;
+  const stepRun = canvasCtx?.stepRunsByNode[id];
 
   const getConditionText = () => {
     const field = config.field_path || 'field';
@@ -31,7 +35,7 @@ export const ConditionIfElseNode = memo(({ data, selected }: NodeProps) => {
         selected
           ? 'ring-2 ring-indigo-600 border-transparent'
           : 'border-zinc-200 hover:border-zinc-300'
-      }`}
+      } ${hasErrors ? 'border-red-400 bg-red-50/20' : ''}`}
     >
       {/* Target Handle (Incoming Connection) */}
       <Handle
@@ -58,26 +62,26 @@ export const ConditionIfElseNode = memo(({ data, selected }: NodeProps) => {
 
         {/* Action Controls */}
         <div className="flex items-center gap-1 shrink-0 opacity-80 hover:opacity-100">
-          {nodeData.onDuplicateNode && (
+          {canvasCtx?.onDuplicateNode && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                nodeData.onDuplicateNode?.(nodeData.nodeId);
+                canvasCtx.onDuplicateNode(id);
               }}
               title="Duplicate node"
-              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors"
+              className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors cursor-pointer"
             >
               <Copy className="h-3 w-3" />
             </button>
           )}
-          {nodeData.onDeleteNode && (
+          {canvasCtx?.onDeleteNode && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                nodeData.onDeleteNode?.(nodeData.nodeId);
+                canvasCtx.onDeleteNode(id);
               }}
               title="Delete node"
-              className="p-1 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="p-1 rounded-md text-zinc-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
             >
               <Trash2 className="h-3 w-3" />
             </button>
@@ -89,36 +93,36 @@ export const ConditionIfElseNode = memo(({ data, selected }: NodeProps) => {
       <div className="mt-2.5 p-2 rounded-lg bg-zinc-50 border border-zinc-200/60 text-[11px] font-mono text-zinc-700 flex items-center justify-between gap-2">
         <span className="truncate">{getConditionText()}</span>
         <span className="text-[10px] text-zinc-400 font-sans shrink-0">
-          #{nodeData.nodeId.slice(-4)}
+          #{id.slice(-4)}
         </span>
       </div>
 
       {/* Error State Badge */}
-      {nodeData.hasErrors && (
+      {hasErrors && (
         <div className="mt-2 flex items-center gap-1.5 p-1.5 rounded-md bg-red-50 border border-red-200 text-[10px] text-red-700">
           <AlertTriangle className="h-3 w-3 shrink-0 text-red-600" />
-          <span className="truncate">{nodeData.errorMessages?.[0] || 'Invalid condition rule configuration'}</span>
+          <span className="truncate">{nodeErrors[0] || 'Invalid condition rule configuration'}</span>
         </div>
       )}
 
       {/* Test Execution Overlay */}
-      {nodeData.executionStatus && (
+      {stepRun?.status && (
         <div className="mt-2 pt-2 border-t border-zinc-100 flex items-center justify-between text-[11px]">
           <div className="flex items-center gap-1.5">
-            {nodeData.executionStatus === 'succeeded' ? (
+            {stepRun.status === 'succeeded' ? (
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-            ) : nodeData.executionStatus === 'failed' ? (
+            ) : stepRun.status === 'failed' ? (
               <XCircle className="h-3.5 w-3.5 text-red-600" />
             ) : (
               <div className="h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
             )}
             <span className="capitalize font-medium text-zinc-700">
-              {nodeData.executionStatus}
+              {stepRun.status}
             </span>
           </div>
-          {nodeData.executionDurationMs !== undefined && (
+          {stepRun.duration_ms !== undefined && (
             <span className="text-zinc-400 tabular-nums">
-              {nodeData.executionDurationMs}ms
+              {stepRun.duration_ms}ms
             </span>
           )}
         </div>
