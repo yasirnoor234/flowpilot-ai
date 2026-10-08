@@ -17,6 +17,14 @@ const mono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "FlowPilot AI — Business Workflow Automation",
   description: "Capture leads, qualify intent with AI, synchronize CRM records, and manage automated follow-ups in one visual workflow platform.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
