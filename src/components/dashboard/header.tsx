@@ -8,6 +8,7 @@ import Link from 'next/link';
 
 interface HeaderProps {
   workspaceName: string;
+  isDemoMode?: boolean;
 }
 
 const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
@@ -37,7 +38,7 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
   },
 };
 
-export function Header({ workspaceName }: HeaderProps) {
+export function Header({ workspaceName, isDemoMode = false }: HeaderProps) {
   const pathname = usePathname();
   const currentInfo = PAGE_TITLES[pathname] || {
     title: 'FlowPilot AI',
@@ -58,6 +59,11 @@ export function Header({ workspaceName }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {isDemoMode && (
+          <Badge variant="warning" className="gap-1 text-[11px] bg-amber-500/10 text-amber-300 border-amber-500/30">
+            <span>🧪 Demo Sandbox</span>
+          </Badge>
+        )}
         <Badge variant="success" className="gap-1 text-[11px] hidden sm:flex">
           <ShieldCheck className="h-3 w-3" />
           <span>RLS Isolated</span>

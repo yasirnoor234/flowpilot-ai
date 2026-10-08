@@ -34,8 +34,9 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           schema_version: 1,
           position: { x: 100, y: 150 },
           config: {
-            method: 'POST',
+            http_method: 'POST',
             path_slug: 'inbound-lead-intake',
+            expected_fields: ['email', 'name', 'message', 'company'],
           },
         },
         {
@@ -46,8 +47,10 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           position: { x: 400, y: 150 },
           config: {
             model: 'gpt-4o-mini',
-            prompt_template: '{{trigger.message}}',
+            prompt_template: 'Analyze and qualify inbound enterprise lead: {{trigger.message}}',
             temperature: 0.1,
+            output_format: 'structured_json',
+            target_fields: ['qualification_score', 'lead_tier', 'reasoning', 'recommended_action'],
           },
         },
         {
@@ -85,12 +88,13 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           config: {
             channel_name: '#hot-leads-vip',
             message_template: '🚨 Priority Inbound Lead: {{trigger.name}} from {{trigger.company}} (Score: {{ai_qualify.qualification_score}})',
+            include_lead_summary: true,
           },
         },
         {
           id: 'node-send-email',
           type: 'action_send_email',
-          title: 'Send Instant Welcome Email',
+          title: 'Send Standard Welcome Email',
           schema_version: 1,
           position: { x: 1300, y: 250 },
           config: {
@@ -105,11 +109,10 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           type: 'action_delay',
           title: '24-Hour Follow-up Timer',
           schema_version: 1,
-          position: { x: 1600, y: 150 },
+          position: { x: 1600, y: 50 },
           config: {
             duration: 24,
             unit: 'hours',
-            follow_up_eligibility_check: true,
           },
         },
         {
@@ -117,10 +120,11 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           type: 'action_slack_notify',
           title: 'Internal Follow-up Check',
           schema_version: 1,
-          position: { x: 1900, y: 150 },
+          position: { x: 1900, y: 50 },
           config: {
             channel_name: '#leads-notifications',
             message_template: '⏰ Follow-up reminder for lead: {{trigger.name}} (Status: Check CRM for response)',
+            include_lead_summary: true,
           },
         },
       ],
@@ -131,8 +135,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
         { id: 'e4', source: 'node-condition-tier', target: 'node-slack-alert', source_handle: 'true' },
         { id: 'e5', source: 'node-condition-tier', target: 'node-send-email', source_handle: 'false' },
         { id: 'e6', source: 'node-slack-alert', target: 'node-delay-followup' },
-        { id: 'e7', source: 'node-send-email', target: 'node-delay-followup' },
-        { id: 'e8', source: 'node-delay-followup', target: 'node-internal-reminder' },
+        { id: 'e7', source: 'node-delay-followup', target: 'node-internal-reminder' },
       ],
     },
   },
@@ -158,8 +161,9 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           schema_version: 1,
           position: { x: 100, y: 150 },
           config: {
-            method: 'POST',
+            http_method: 'POST',
             path_slug: 'support-intake',
+            expected_fields: ['email', 'name', 'message'],
           },
         },
         {
@@ -170,7 +174,10 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           position: { x: 400, y: 150 },
           config: {
             model: 'gpt-4o-mini',
-            prompt_template: 'Classify the inquiry: {{trigger.message}}',
+            prompt_template: 'Classify support ticket urgency and intent: {{trigger.message}}',
+            temperature: 0.1,
+            output_format: 'structured_json',
+            target_fields: ['category', 'priority', 'summary', 'suggested_action'],
           },
         },
         {
@@ -194,6 +201,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           config: {
             channel_name: '#support-queue',
             message_template: '💬 New Support Request from {{trigger.name}}: Category "{{ai_qualify.category}}"',
+            include_lead_summary: true,
           },
         },
       ],
@@ -225,7 +233,14 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           title: 'Proposal Sent Trigger',
           schema_version: 1,
           position: { x: 100, y: 150 },
-          config: {},
+          config: {
+            sample_payload: {
+              name: 'Sarah Connor',
+              company: 'SkyDefense AI',
+              status: 'proposal_sent',
+              email: 'sarah@skydefense.ai',
+            },
+          },
         },
         {
           id: 'node-delay-3days',
@@ -236,7 +251,6 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           config: {
             duration: 72,
             unit: 'hours',
-            follow_up_eligibility_check: true,
           },
         },
         {
@@ -260,6 +274,7 @@ export const WORKFLOW_TEMPLATES: WorkflowTemplate[] = [
           config: {
             channel_name: '#sales-pipeline',
             message_template: '📋 Follow up on pending proposal for {{trigger.name}} (Company: {{trigger.company}})',
+            include_lead_summary: true,
           },
         },
       ],

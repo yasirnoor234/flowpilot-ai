@@ -1,5 +1,7 @@
 import type { WorkflowRecord, WorkflowVersionRecord } from './workflow';
 import type { WorkflowRunRecord, WorkflowStepRunRecord, TriggerEventRecord } from './execution';
+import type { LeadRecord, LeadActivityRecord, WebhookEndpointRecord } from './crm';
+import type { IntegrationConnectionRecord, IntegrationActionAttemptRecord } from './integrations';
 
 export type Json =
   | string
@@ -303,6 +305,182 @@ export interface Database {
           payload?: Json;
           status?: 'received' | 'dispatched' | 'failed';
           run_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      leads: {
+        Row: LeadRecord;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          name: string;
+          email?: string | null;
+          phone?: string | null;
+          company?: string | null;
+          source?: string;
+          service_interest?: string | null;
+          message?: string | null;
+          estimated_budget?: any;
+          qualification_status?: string;
+          qualification_score?: number | null;
+          qualification_reasoning?: string | null;
+          owner_id?: string | null;
+          status?: string;
+          custom_attributes?: Record<string, any>;
+          tags?: string[];
+          external_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          name?: string;
+          email?: string | null;
+          phone?: string | null;
+          company?: string | null;
+          source?: string;
+          service_interest?: string | null;
+          message?: string | null;
+          estimated_budget?: any;
+          qualification_status?: string;
+          qualification_score?: number | null;
+          qualification_reasoning?: string | null;
+          owner_id?: string | null;
+          status?: string;
+          custom_attributes?: Record<string, any>;
+          tags?: string[];
+          external_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      lead_activities: {
+        Row: LeadActivityRecord;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          lead_id: string;
+          activity_type: string;
+          title: string;
+          description?: string | null;
+          metadata?: Record<string, any>;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          lead_id?: string;
+          activity_type?: string;
+          title?: string;
+          description?: string | null;
+          metadata?: Record<string, any>;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      webhook_endpoints: {
+        Row: WebhookEndpointRecord;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          workflow_id: string;
+          path_slug: string;
+          secret_token: string;
+          is_active?: boolean;
+          rate_limit_per_minute?: number;
+          total_requests_count?: number;
+          last_triggered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          workflow_id?: string;
+          path_slug?: string;
+          secret_token?: string;
+          is_active?: boolean;
+          rate_limit_per_minute?: number;
+          total_requests_count?: number;
+          last_triggered_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      integration_connections: {
+        Row: IntegrationConnectionRecord;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          provider: string;
+          name: string;
+          status?: string;
+          encrypted_credentials?: string;
+          masked_key?: string;
+          settings?: Record<string, any>;
+          is_active?: boolean;
+          last_tested_at?: string | null;
+          last_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          provider?: string;
+          name?: string;
+          status?: string;
+          encrypted_credentials?: string;
+          masked_key?: string;
+          settings?: Record<string, any>;
+          is_active?: boolean;
+          last_tested_at?: string | null;
+          last_error?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      integration_action_attempts: {
+        Row: IntegrationActionAttemptRecord;
+        Insert: {
+          id?: string;
+          workspace_id: string;
+          connection_id?: string | null;
+          action_type: string;
+          workflow_run_id?: string | null;
+          workflow_step_id?: string | null;
+          idempotency_key?: string | null;
+          status?: string;
+          provider_message_id?: string | null;
+          recipient_or_target?: string | null;
+          payload_summary?: Record<string, any>;
+          error_message?: string | null;
+          latency_ms?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          workspace_id?: string;
+          connection_id?: string | null;
+          action_type?: string;
+          workflow_run_id?: string | null;
+          workflow_step_id?: string | null;
+          idempotency_key?: string | null;
+          status?: string;
+          provider_message_id?: string | null;
+          recipient_or_target?: string | null;
+          payload_summary?: Record<string, any>;
+          error_message?: string | null;
+          latency_ms?: number | null;
           created_at?: string;
           updated_at?: string;
         };

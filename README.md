@@ -1,89 +1,112 @@
 # FlowPilot AI ⚡
 
-> **AI-Powered Business Automation Platform for Small Businesses.**  
-> Effortlessly capture, qualify, route, and follow up with leads through durable, multi-step AI workflows.
+> **Autonomous AI Workflow & Lead Operations Platform for Modern Enterprises.**  
+> Effortlessly capture, qualify, route, and follow up with leads through durable, multi-step AI DAG pipelines with multi-tenant isolation, real-time CRM, and live integrations.
+
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://flowpilot.codexvetech.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16.4-black.svg)](https://nextjs.org/)
+[![React Flow](https://img.shields.io/badge/React%20Flow-12.12-purple.svg)](https://reactflow.dev/)
+[![Inngest](https://img.shields.io/badge/Inngest-Durable%20Execution-orange.svg)](https://www.inngest.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20RLS-emerald.svg)](https://supabase.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ---
 
 ## 🌟 Overview
 
-**FlowPilot AI** is an intelligent business workflow automation engine designed specifically for modern small businesses. It replaces fragmented zap-style tools with an integrated, durable, and type-safe AI pipeline that handles the full lead-to-close journey.
+**FlowPilot AI** is an enterprise-ready business workflow automation engine designed to replace fragmented webhook tools with an integrated, durable, and type-safe AI pipeline that manages the entire lead-to-close journey.
 
-### 🎯 Primary MVP Use Case
+### 🎯 Primary Production Architecture
 ```
-[New Lead Webhook/Manual Trigger]
+[Inbound Webhook Intake / Form]
                │
                ▼
-   [AI Qualification & Scoring]  ─── Evaluates intent, budget, and customer tier (Hot/Warm/Cold)
+   [GPT-4o Lead Qualification]   ─── Evaluates intent, score (0-100), and tier (HOT/WARM/COOL)
                │
                ▼
-     [Built-in CRM Upsert]       ─── Creates/updates lead profile & activity record
+      [Built-in CRM Upsert]      ─── Synchronizes normalized lead profile & activity log
                │
                ▼
-    [Conditional Branching]      ─── (Hot Lead vs Standard Lead)
-      ├── Hot: Priority Slack Alert + VIP Email Sequence
-      └── Standard: Personalized Confirmation Email
+     [Conditional Branching]     ─── Evaluates priority tier (HOT vs Standard)
+       ├── Hot: Priority Slack Block Kit Alert + VIP Response
+       └── Standard: Personalized Confirmation Email (Resend)
                │
                ▼
-   [Durable Follow-Up Delay]     ─── Resumes execution reliably after 24h/48h
+    [Durable Follow-Up Delay]    ─── 24h/72h Inngest sleep timer with live DB state re-reading
                │
                ▼
-     [Follow-Up Auto-Email]
+    [Eligibility & Follow-Up]    ─── Skips if lead is won/closed/opted-out; sends internal task
 ```
 
 ---
 
 ## 🛠 Tech Stack & Architecture
 
-| Layer | Technology |
-| :--- | :--- |
-| **Framework** | [Next.js 16 (App Router)](https://nextjs.org/) + TypeScript 5 |
-| **Styling & UI** | [Tailwind CSS](https://tailwindcss.com/) + Custom Glassmorphism Theme |
-| **Database & Auth** | [Supabase Postgres](https://supabase.com/) with strict Row Level Security (RLS) & SSR Auth |
-| **Background Orchestration** | [Inngest](https://www.inngest.com/) (Durable step memoization, sleep timers, retries) |
-| **AI Evaluation** | [OpenAI SDK](https://platform.openai.com/) (Structured lead scoring & reasoning) |
-| **Integrations** | [Resend](https://resend.com/) (Transactional Email) & Slack Incoming Webhooks |
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Framework** | [Next.js 16 (App Router)](https://nextjs.org/) + TypeScript 5 | Fullstack React server components, server actions & API routes |
+| **Visual Builder** | [@xyflow/react](https://reactflow.dev/) | Interactive DAG drag-and-drop workflow canvas with dynamic handles |
+| **Styling & UI** | [Tailwind CSS v4](https://tailwindcss.com/) + Custom Design System | Dark mode, glassmorphism, responsive panels, accessible badges |
+| **Database & Auth** | [Supabase PostgreSQL](https://supabase.com/) | Strict multi-tenant Row Level Security (RLS) & SSR auth |
+| **Durable Engine** | [Inngest](https://www.inngest.com/) | Step memoization, sleep timers across deployments, retry backoff |
+| **AI Intelligence** | [OpenAI](https://platform.openai.com/) (GPT-4o, GPT-4o-mini) | Structured JSON qualification, sentiment scoring, prompt fencing |
+| **Integrations** | [Resend](https://resend.com/) & [Slack](https://api.slack.com/) | Transactional email & Block Kit alerts with AES-256-GCM encryption |
 
 ---
 
-## 🚀 Key Features
+## 🚀 Key Subsystems & Features
 
-### 1. Multi-Tenant Workspace & Role-Based Access
-- Complete tenant data isolation enforced at the Postgres database level with **Row Level Security (RLS)**.
-- Workspace membership roles (`owner`, `member`) with SSR route protection and session management.
+### 1. Multi-Tenant Workspace & Strict RLS Isolation
+- Complete tenant data isolation enforced at the PostgreSQL database level via Row Level Security (RLS) policies on all business tables.
+- Workspace membership roles (`owner`, `member`) with server-side validation and session switcher.
 
-### 2. DAG Workflow Engine & Immutable Versioning
-- **Directed Acyclic Graph (DAG)** workflow builder supporting 9 node types:
-  - `trigger_manual`, `trigger_webhook`
-  - `action_field_mapping`, `condition_if_else`
-  - `action_ai_qualify`, `action_crm_upsert`
-  - `action_send_email`, `action_slack_alert`
-  - `action_delay` (durable sleep timers)
-- **Publication Rule Enforcement**: Validates graphs against 8 publication constraints (rejects cycles, disconnected nodes, branch merges, missing/multiple triggers, and invalid upstream references).
-- **Immutable Version Snapshots**: Running and historical executions reference immutable version snapshots, protecting active workflows from in-flight draft changes.
+### 2. Visual DAG Workflow Builder & Publication Engine
+- Interactive builder canvas featuring a categorized node palette (Triggers, Logic, AI, Integrations).
+- 9 typed node schemas with Zod validation.
+- Graph validation engine enforcing 8 publication rules (rejects cycles, disconnected nodes, branch merges, missing/multiple triggers, and invalid upstream references).
+- Immutable version snapshotting protecting active executions from in-flight draft changes.
 
-### 3. Durable Execution Engine (Powered by Inngest)
-- **Zero-`eval` Expression Resolution**: Safe declarative field interpolation (`{{trigger.email}}`, `{{ai_qualify.score}}`) with prototype-pollution guardrails.
-- **Untaken Branch Skipping**: Automatically detects condition branch outcomes and marks alternate subtree steps as `skipped`.
-- **Durable Delays**: Resumes execution across hours or days via Inngest `step.sleep`.
-- **Idempotency & Deduplication**: Unique constraints prevent duplicate executions from duplicate trigger events.
-- **Mid-Flight Cancellation & Linked Reruns**: Safely halt active runs or spawn linked reruns preserving original inputs and version lineage.
+### 3. Built-in CRM & High-Throughput Webhook Ingestion
+- Public authenticated webhook endpoints (`/api/v1/webhook/[slug]`) with secret token authentication, secret rotation, 1MB payload limits, and rate limiting.
+- Email normalization (`lower(trim(email))`) with workspace-scoped deduplication and alternate fallback identities.
+- Leads inbox with multi-attribute filtering, search, pagination, and chronological activity timeline with manual notes.
 
-### 4. Real-Time Execution Inspector
-- Audit trails and live logs at `/runs` and `/runs/[id]`.
-- Interactive step execution timeline with execution durations, status badges (`succeeded`, `failed`, `running`, `waiting`, `skipped`, `canceled`), and raw JSON input/output drawers.
+### 4. Enterprise AI Provider & Security Fencing
+- Structured JSON output validated by Zod for qualification scoring, intent classification, and email drafting.
+- Anti-prompt injection boundary fencing (`wrapUntrustedInput`).
+- Token usage tracking, latency recording, and workspace AI quota enforcement.
+- Deterministic mock fallback adapter for offline or demo environments.
+
+### 5. Live Email (Resend) & Slack Integrations
+- Outbound transactional email delivery with verified sender requirements, idempotency keys, and demo mode safeguards.
+- Slack Block Kit alert cards with direct deep-links to CRM lead records.
+- Strict SSRF protection restricting Slack webhook targets to `hooks.slack.com`.
+- AES-256-GCM server-side encryption for stored third-party credentials with automated secret redaction from logs (`redactSecrets`).
+
+### 6. Durable Follow-ups & State Re-reading
+- Durable delay steps (`step.sleep`) executing across hours or days.
+- State re-reading: when a delay completes, the engine re-evaluates lead status directly from Postgres, cleanly skipping follow-ups if the deal has been won, closed, lost, or opted out.
+
+### 7. Sandbox Demo Mode & Synthetic Leads
+- Demo workspaces feature an amber sandbox banner with a one-click "Reset Demo Data" trigger.
+- Prevents demo sessions from dispatching real external emails or webhook alerts.
+- Populated with 5 realistic synthetic enterprise leads.
+
+### 8. Operational Monitoring & Health Check
+- Operational monitoring dashboard (`/overview`) with real database metrics and formula-backed estimated time saved.
+- Public health check API (`/api/health`) reporting sanitized database, Inngest, and encryption status.
 
 ---
 
-## ⚙️ Getting Started
+## ⚙️ Getting Started (Local Development)
 
 ### 1. Prerequisites
-- **Node.js**: v20.x or later
+- **Node.js**: v20.x or v22.x
 - **npm** or **pnpm**
 - A [Supabase](https://supabase.com/) account & project
-- An [Inngest](https://www.inngest.com/) account (or local Inngest Dev Server)
+- An [Inngest](https://www.inngest.com/) account (or local Inngest CLI)
 
-### 2. Clone & Install
+### 2. Clone & Install Dependencies
 ```bash
 git clone https://github.com/yasirnoor234/flowpilot-ai.git
 cd flowpilot-ai
@@ -96,39 +119,48 @@ Copy `.env.example` to `.env.local`:
 cp .env.example .env.local
 ```
 
-Fill in the required environment variables:
+Populate the required configuration values:
 ```env
-# Supabase
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NODE_ENV=development
+
+# Supabase Database & Auth
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
-# Inngest
+# Inngest Background Orchestrator
 INNGEST_EVENT_KEY=your-inngest-event-key
 INNGEST_SIGNING_KEY=your-inngest-signing-key
 
-# Optional / Demo Integration Keys (Built-in Demo Adapters available)
-OPENAI_API_KEY=your-openai-key
-RESEND_API_KEY=your-resend-key
+# Integrations (Optional / Fallback Demo Adapters Built-in)
+OPENAI_API_KEY=sk-...
+RESEND_API_KEY=re_...
+RESEND_FROM_EMAIL=FlowPilot AI <notifications@yourdomain.com>
 SLACK_WEBHOOK_URL=https://hooks.slack.com/services/...
+ENCRYPTION_SECRET_KEY=your-32-byte-hex-secret-key
 ```
 
 ### 4. Apply Database Migrations
-Run the SQL migration files located in `supabase/migrations/` inside your Supabase SQL Editor in numerical order:
-1. `20261007000001_initial_auth_and_workspaces.sql`
-2. `20261007000002_fix_workspace_creation_rls.sql`
-3. `20261007000003_workflows_and_versions.sql`
-4. `20261008000001_workflow_execution_engine.sql`
+Execute the migrations in your Supabase SQL Editor in numerical order:
+```bash
+supabase/migrations/20261007000001_initial_auth_and_workspaces.sql
+supabase/migrations/20261007000002_fix_workspace_creation_rls.sql
+supabase/migrations/20261007000003_workflows_and_versions.sql
+supabase/migrations/20261008000001_workflow_execution_engine.sql
+supabase/migrations/20261008000002_crm_and_webhooks.sql
+supabase/migrations/20261008000003_integrations_and_connections.sql
+```
 
 *(Optional)* Seed sample data with `supabase/seed.sql`.
 
-### 5. Run the Local Development Servers
-Start the Next.js dev server:
+### 5. Start the Development Server
 ```bash
 npm run dev
 ```
 
-In a separate terminal, start the Inngest Dev Server (optional for local event inspection):
+In a separate terminal, launch the Inngest local dev runner:
 ```bash
 npx inngest-cli@latest dev -u http://localhost:3000/api/inngest
 ```
@@ -137,23 +169,41 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🧪 Running Automated Tests
+## 🧪 Automated Testing & Verification
 
-FlowPilot AI includes comprehensive test suites for validation rules and the durable execution engine:
+Run the automated test suites:
 
 ```bash
-# Run Phase 2 Workflow Publication Validator Tests (9 tests)
+# Phase 9 Launch & Smoke-Test Suite (23 tests)
+npx tsx scripts/run-phase9-smoke-tests.ts
+
+# Full E2E Workflow Verification Suite (27 tests)
+npx tsx scripts/run-e2e-verification.ts
+
+# Phase 2 Workflow Publication Validator (9 tests)
 npx tsx scripts/run-validator-tests.ts
 
-# Run Phase 3 Execution Engine Tests (6 tests)
+# Phase 3 Execution Engine Tests (6 tests)
 npx tsx scripts/run-execution-tests.ts
 
-# Run TypeScript Type Checking
+# Phase 7 Integration Tests (21 tests)
+npx tsx scripts/run-integration-tests.ts
+
+# TypeScript Static Type Check
 npx tsc --noEmit
 
-# Run Production Build
+# Production Build
 npm run build
 ```
+
+---
+
+## 🚀 Production Deployment to Vercel
+
+Target Custom Domain: **`flowpilot.codexvetech.com`**
+
+For detailed step-by-step instructions on setting up DNS records, Inngest Cloud webhooks, Resend domain verification, and post-deployment smoke tests, refer to:
+📖 [Production Deployment & Smoke-Test Guide](docs/deployment-and-smoke-tests.md)
 
 ---
 
@@ -161,29 +211,42 @@ npm run build
 
 ```
 flowpilot-ai/
-├── docs/                      # Architectural specs & data models
+├── docs/                      # Architectural specs, data models & operations guides
 │   ├── architecture.md
 │   ├── data-model.md
-│   ├── product-scope.md
-│   └── implementation-status.md
-├── scripts/                   # Test runners & utility scripts
-│   ├── run-validator-tests.ts
-│   └── run-execution-tests.ts
+│   ├── deployment-and-smoke-tests.md
+│   ├── implementation-status.md
+│   ├── local-setup.md
+│   └── product-scope.md
+├── scripts/                   # Automated test suites & verification runners
+│   ├── run-e2e-verification.ts
+│   ├── run-execution-tests.ts
+│   ├── run-integration-tests.ts
+│   ├── run-phase9-smoke-tests.ts
+│   └── run-validator-tests.ts
 ├── src/
-│   ├── app/                   # Next.js App Router (Pages & API endpoints)
-│   │   ├── (auth)/            # Login, Signup, Forgot/Update password
-│   │   ├── (dashboard)/       # Overview, Workflows, Runs, Leads, Settings
-│   │   └── api/inngest/       # Inngest webhook route handler
-│   ├── components/            # React UI components (Dashboard, Workflow, Runs)
+│   ├── app/                   # Next.js App Router (Pages, Layouts & API routes)
+│   │   ├── (auth)/            # Auth pages (Login, Signup, Reset Password)
+│   │   ├── (dashboard)/       # Dashboard (Overview, Workflows, Leads, Integrations, Runs, Settings)
+│   │   ├── api/health/        # Sanitized system health check endpoint
+│   │   ├── api/inngest/       # Inngest webhook route handler
+│   │   └── api/v1/webhook/    # Public authenticated webhook ingestion API
+│   ├── components/            # React UI components & custom canvas nodes
 │   ├── lib/
-│   │   ├── actions/           # Next.js Server Actions (Workflows, Execution, Auth)
-│   │   ├── inngest/           # Inngest client, dispatch, and durable function definitions
-│   │   ├── supabase/          # Supabase client & server SSR wrappers
+│   │   ├── actions/           # Next.js Server Actions (Workflows, Leads, Integrations, Demo)
+│   │   ├── ai/                # OpenAI adapter, deterministic mock adapter, schemas
+│   │   ├── auth/              # Workspace context & role resolution
+│   │   ├── crm/               # Lead normalization & activity timeline
+│   │   ├── inngest/           # Inngest client, events, and background functions
+│   │   ├── integrations/      # Resend email & Slack Block Kit adapters
+│   │   ├── maintenance/       # Execution log retention & pruning utilities
+│   │   ├── security/          # AES-256-GCM encryption & secret redaction
+│   │   ├── supabase/          # Supabase client, server SSR & admin wrappers
 │   │   └── workflow/          # DAG validator, templates, expression resolver & executors
-│   └── types/                 # TypeScript interfaces & database schemas
-└── supabase/
-    ├── migrations/            # Versioned SQL schema & RLS policies
-    └── seed.sql               # Local development seed data
+│   └── types/                 # TypeScript interfaces, Zod schemas & database definitions
+├── supabase/                  # SQL migrations & seed data
+├── vercel.json                # Vercel production headers & security configuration
+└── package.json
 ```
 
 ---
