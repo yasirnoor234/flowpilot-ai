@@ -75,10 +75,10 @@ export default async function IntegrationsPage() {
       />
 
       {/* Webhook Endpoint Tester */}
-      <div className="space-y-4 pt-6 border-t border-zinc-200">
-        <div>
+      <div className="space-y-5 pt-8 border-t border-zinc-200">
+        <div className="space-y-1">
           <h2 className="text-base font-semibold text-zinc-900">Inbound lead capture webhooks</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-500">
             Accept lead submissions directly into your workflows from external landing pages, Webflow, or Typeform.
           </p>
         </div>
