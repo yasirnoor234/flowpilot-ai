@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  experimental: {
+    cpus: 1,
+  },
   typescript: {
     // Independent `npx tsc --noEmit` is run in CI/CD and verification to prevent sub-process memory exhaustion on Windows
     ignoreBuildErrors: true,
